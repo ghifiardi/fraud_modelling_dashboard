@@ -13,8 +13,14 @@ from typing import Optional, Dict, Any
 
 class LLMChatbotService:
     def __init__(self):
-        self.openai_api_key = os.getenv('OPENAI_API_KEY')
-        self.huggingface_api_key = os.getenv('HUGGINGFACE_API_KEY')
+        # Try to get API keys from Streamlit secrets first (for cloud deployment)
+        try:
+            self.openai_api_key = st.secrets.get('OPENAI_API_KEY', os.getenv('OPENAI_API_KEY'))
+            self.huggingface_api_key = st.secrets.get('HUGGINGFACE_API_KEY', os.getenv('HUGGINGFACE_API_KEY'))
+        except:
+            # Fallback to environment variables
+            self.openai_api_key = os.getenv('OPENAI_API_KEY')
+            self.huggingface_api_key = os.getenv('HUGGINGFACE_API_KEY')
         
     def get_response(self, user_input: str, chat_history: list = None) -> str:
         """
@@ -92,30 +98,54 @@ class LLMChatbotService:
     
     def _try_huggingface(self, user_input: str, chat_history: list = None) -> Optional[str]:
         """Try HuggingFace Inference API"""
+        if not self.huggingface_api_key:
+            return None
+            
         try:
             headers = {
-                "Authorization": f"Bearer {self.huggingface_api_key}" if self.huggingface_api_key else "",
+                "Authorization": f"Bearer {self.huggingface_api_key}",
                 "Content-Type": "application/json"
             }
             
+            # Use a simpler, more reliable model
             payload = {
-                "inputs": f"<|system|>{self._get_system_prompt()}<|end|><|user|>{user_input}<|end|><|assistant|>",
+                "inputs": f"Question: {user_input}\nAnswer:",
                 "parameters": {
-                    "max_new_tokens": 500,
+                    "max_new_tokens": 200,
                     "temperature": 0.7,
-                    "do_sample": True
+                    "do_sample": True,
+                    "return_full_text": False
                 }
             }
             
-            response = requests.post(
-                "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
-                headers=headers,
-                json=payload,
-                timeout=30
-            )
-            response.raise_for_status()
-            data = response.json()
-            return data[0]["generated_text"].split("<|assistant|>")[-1].strip()
+            # Try multiple models in case one is unavailable
+            models = [
+                "microsoft/DialoGPT-medium",
+                "gpt2",
+                "distilgpt2"
+            ]
+            
+            for model in models:
+                try:
+                    response = requests.post(
+                        f"https://api-inference.huggingface.co/models/{model}",
+                        headers=headers,
+                        json=payload,
+                        timeout=15
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        if isinstance(data, list) and len(data) > 0:
+                            generated_text = data[0].get("generated_text", "")
+                            # Extract the generated part
+                            if "Answer:" in generated_text:
+                                return generated_text.split("Answer:")[-1].strip()
+                            else:
+                                return generated_text.strip()
+                except Exception:
+                    continue
+                    
+            return None
         except Exception as e:
             return None
     
