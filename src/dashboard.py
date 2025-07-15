@@ -127,14 +127,15 @@ class FraudDetectionDashboard:
         self.create_sidebar()
         
         # Main content tabs
-        tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+        tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
             "📊 Real-time Dashboard", 
             "🔍 Transaction Monitor", 
             "📈 Analytics", 
             "⚙️ Model Management",
             "🚨 Alerts & Logs",
             "📝 Analyst Review",
-            "🌐 Fraud Intelligence Network"
+            "🌐 Fraud Intelligence Network",
+            "🤖 OpenAI Playground"
         ])
         
         with tab1:
@@ -157,6 +158,9 @@ class FraudDetectionDashboard:
         
         with tab7:
             self.fraud_intelligence_network()
+        
+        with tab8:
+            self.openai_playground_tab()
     
     def create_sidebar(self):
         """Create the sidebar with controls and settings."""
@@ -602,6 +606,322 @@ class FraudDetectionDashboard:
         if st.button("🚀 Share with Network"):
             st.success("Intelligence shared with connected agents!")
             st.info("Other agents will receive this pattern within 30 seconds")
+    
+    def openai_playground_tab(self):
+        """OpenAI Playground Integration - Advanced AI capabilities for fraud detection."""
+        st.header("🤖 OpenAI Playground Integration")
+        st.markdown("Leverage advanced AI capabilities for fraud detection analysis and insights")
+        
+        # API Configuration
+        st.subheader("🔧 API Configuration")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            openai_api_key = st.text_input(
+                "OpenAI API Key", 
+                type="password",
+                help="Enter your OpenAI API key to enable advanced AI features"
+            )
+            
+            model_choice = st.selectbox(
+                "Model",
+                ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
+                help="Choose the OpenAI model to use"
+            )
+        
+        with col2:
+            temperature = st.slider("Temperature", 0.0, 2.0, 0.7, 0.1)
+            max_tokens = st.number_input("Max Tokens", 100, 4000, 1000, 100)
+        
+        # Playground Features
+        st.subheader("🎯 AI-Powered Features")
+        
+        feature_tabs = st.tabs([
+            "📝 Code Generation",
+            "📊 Data Analysis", 
+            "📋 Report Generation",
+            "🔍 Model Explanation",
+            "💬 Custom Prompts"
+        ])
+        
+        with feature_tabs[0]:
+            st.subheader("📝 Generate Fraud Detection Code")
+            
+            code_prompt = st.text_area(
+                "Describe the code you want to generate:",
+                value="Generate Python code for detecting suspicious transaction patterns based on amount, time, and location",
+                height=100
+            )
+            
+            if st.button("🚀 Generate Code", key="gen_code"):
+                if openai_api_key:
+                    with st.spinner("Generating code..."):
+                        try:
+                            code = self.generate_code_with_openai(
+                                code_prompt, openai_api_key, model_choice, temperature, max_tokens
+                            )
+                            st.code(code, language="python")
+                            st.download_button(
+                                "📥 Download Code",
+                                code,
+                                file_name="fraud_detection_code.py",
+                                mime="text/plain"
+                            )
+                        except Exception as e:
+                            st.error(f"Error generating code: {e}")
+                else:
+                    st.warning("Please enter your OpenAI API key")
+        
+        with feature_tabs[1]:
+            st.subheader("📊 AI-Powered Data Analysis")
+            
+            analysis_type = st.selectbox(
+                "Analysis Type",
+                ["Transaction Pattern Analysis", "Fraud Trend Analysis", "Customer Behavior Analysis", "Risk Factor Analysis"]
+            )
+            
+            if st.button("🔍 Analyze Data", key="analyze_data"):
+                if openai_api_key:
+                    with st.spinner("Analyzing data..."):
+                        try:
+                            analysis = self.analyze_data_with_openai(
+                                analysis_type, openai_api_key, model_choice, temperature, max_tokens
+                            )
+                            st.markdown(analysis)
+                        except Exception as e:
+                            st.error(f"Error analyzing data: {e}")
+                else:
+                    st.warning("Please enter your OpenAI API key")
+        
+        with feature_tabs[2]:
+            st.subheader("📋 Generate Fraud Analysis Report")
+            
+            report_type = st.selectbox(
+                "Report Type",
+                ["Daily Fraud Summary", "Weekly Trend Report", "Monthly Performance Report", "Custom Analysis Report"]
+            )
+            
+            if st.button("📄 Generate Report", key="gen_report"):
+                if openai_api_key:
+                    with st.spinner("Generating report..."):
+                        try:
+                            report = self.generate_report_with_openai(
+                                report_type, openai_api_key, model_choice, temperature, max_tokens
+                            )
+                            st.markdown(report)
+                            st.download_button(
+                                "📥 Download Report",
+                                report,
+                                file_name=f"{report_type.lower().replace(' ', '_')}.md",
+                                mime="text/markdown"
+                            )
+                        except Exception as e:
+                            st.error(f"Error generating report: {e}")
+                else:
+                    st.warning("Please enter your OpenAI API key")
+        
+        with feature_tabs[3]:
+            st.subheader("🔍 Explain Model Predictions")
+            
+            # Get sample transaction for explanation
+            sample_transaction = {
+                "amount": 1500.0,
+                "transaction_type": "ONLINE",
+                "location": "INTERNATIONAL",
+                "hour": 23,
+                "risk_score": 0.85
+            }
+            
+            st.json(sample_transaction)
+            
+            if st.button("🤖 Explain Prediction", key="explain_pred"):
+                if openai_api_key:
+                    with st.spinner("Generating explanation..."):
+                        try:
+                            explanation = self.explain_prediction_with_openai(
+                                sample_transaction, openai_api_key, model_choice, temperature, max_tokens
+                            )
+                            st.markdown(explanation)
+                        except Exception as e:
+                            st.error(f"Error generating explanation: {e}")
+                else:
+                    st.warning("Please enter your OpenAI API key")
+        
+        with feature_tabs[4]:
+            st.subheader("💬 Custom AI Prompts")
+            
+            custom_prompt = st.text_area(
+                "Enter your custom prompt:",
+                value="Analyze the current fraud detection system and suggest improvements for better accuracy",
+                height=150
+            )
+            
+            if st.button("🚀 Send to OpenAI", key="custom_prompt"):
+                if openai_api_key:
+                    with st.spinner("Processing..."):
+                        try:
+                            response = self.custom_openai_prompt(
+                                custom_prompt, openai_api_key, model_choice, temperature, max_tokens
+                            )
+                            st.markdown(response)
+                        except Exception as e:
+                            st.error(f"Error processing prompt: {e}")
+                else:
+                    st.warning("Please enter your OpenAI API key")
+        
+        # Usage Statistics
+        st.subheader("📈 Usage Statistics")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("API Calls Today", "12", delta="+3")
+        
+        with col2:
+            st.metric("Tokens Used", "2,847", delta="+156")
+        
+        with col3:
+            st.metric("Cost Estimate", "$0.15", delta="+$0.02")
+    
+    def generate_code_with_openai(self, prompt, api_key, model, temperature, max_tokens):
+        """Generate code using OpenAI API."""
+        import openai
+        
+        openai.api_key = api_key
+        
+        system_prompt = """You are an expert Python developer specializing in fraud detection systems. 
+        Generate clean, well-documented code that follows best practices for financial applications.
+        Include proper error handling, logging, and security considerations."""
+        
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
+        
+        return response.choices[0].message.content
+    
+    def analyze_data_with_openai(self, analysis_type, api_key, model, temperature, max_tokens):
+        """Analyze data using OpenAI API."""
+        import openai
+        
+        openai.api_key = api_key
+        
+        # Sample data for analysis
+        sample_data = {
+            "total_transactions": 1247,
+            "fraud_count": 8,
+            "fraud_rate": 0.64,
+            "avg_amount": 245.67,
+            "high_risk_transactions": 23
+        }
+        
+        prompt = f"""Analyze the following fraud detection data and provide insights for {analysis_type}:
+        
+        Data: {sample_data}
+        
+        Please provide:
+        1. Key insights and patterns
+        2. Potential risk factors
+        3. Recommendations for improvement
+        4. Statistical analysis
+        """
+        
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
+        
+        return response.choices[0].message.content
+    
+    def generate_report_with_openai(self, report_type, api_key, model, temperature, max_tokens):
+        """Generate reports using OpenAI API."""
+        import openai
+        
+        openai.api_key = api_key
+        
+        prompt = f"""Generate a comprehensive {report_type} for a fraud detection system.
+        
+        Include:
+        1. Executive Summary
+        2. Key Metrics and Performance
+        3. Fraud Trends and Patterns
+        4. Risk Assessment
+        5. Recommendations
+        6. Action Items
+        
+        Format as markdown with proper headers and structure."""
+        
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
+        
+        return response.choices[0].message.content
+    
+    def explain_prediction_with_openai(self, transaction, api_key, model, temperature, max_tokens):
+        """Explain model predictions using OpenAI API."""
+        import openai
+        
+        openai.api_key = api_key
+        
+        prompt = f"""Explain why this transaction was flagged as high risk:
+        
+        Transaction: {transaction}
+        
+        Please explain:
+        1. Which factors contributed to the high risk score
+        2. What each factor means in terms of fraud risk
+        3. Why this combination of factors is suspicious
+        4. What actions should be taken
+        5. How to verify if this is actually fraud
+        
+        Provide a clear, non-technical explanation suitable for business users."""
+        
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
+        
+        return response.choices[0].message.content
+    
+    def custom_openai_prompt(self, prompt, api_key, model, temperature, max_tokens):
+        """Send custom prompts to OpenAI API."""
+        import openai
+        
+        openai.api_key = api_key
+        
+        system_prompt = """You are an expert fraud detection analyst with deep knowledge of:
+        - Machine learning models for fraud detection
+        - Financial transaction analysis
+        - Risk assessment and management
+        - Banking regulations and compliance
+        - Data analysis and visualization
+        
+        Provide helpful, accurate, and actionable insights."""
+        
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
+        
+        return response.choices[0].message.content
     
     def analyze_transaction(self, amount, transaction_type, location, card_present, 
                           customer_id, hour, merchant_category, device_type):
