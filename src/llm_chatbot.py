@@ -254,7 +254,7 @@ def create_chatbot_ui():
     user_input = st.sidebar.text_input("Ask me anything about fraud detection...")
     
     if user_input:
-        with st.sidebar.spinner("🤖 Thinking..."):
+        with st.spinner("🤖 Thinking..."):
             # Get response from chatbot service
             response = st.session_state.chatbot_service.get_response(user_input, st.session_state.chat_history)
             

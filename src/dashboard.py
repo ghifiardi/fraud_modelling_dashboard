@@ -125,12 +125,14 @@ class FraudDetectionDashboard:
         self.create_sidebar()
         
         # Main content tabs
-        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
             "📊 Real-time Dashboard", 
             "🔍 Transaction Monitor", 
             "📈 Analytics", 
             "⚙️ Model Management",
-            "🚨 Alerts & Logs"
+            "🚨 Alerts & Logs",
+            "📝 Analyst Review",
+            "🌐 Fraud Intelligence Network"
         ])
         
         with tab1:
@@ -147,6 +149,12 @@ class FraudDetectionDashboard:
         
         with tab5:
             self.alerts_and_logs()
+        
+        with tab6:
+            self.analyst_review_tab()
+        
+        with tab7:
+            self.fraud_intelligence_network()
     
     def create_sidebar(self):
         """Create the sidebar with controls and settings."""
@@ -401,6 +409,197 @@ class FraudDetectionDashboard:
             </div>
             """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
+    
+    def analyst_review_tab(self):
+        """Analyst review and feedback loop."""
+        st.header("📝 Analyst Review & Feedback")
+        # Load or generate transactions
+        df = self.generate_sample_transactions(100)
+        # Simulate a simple anomaly flag for demo (replace with your real flag)
+        df['is_fraud_suspect'] = (df['amount'] > df['amount'].quantile(0.95))
+        # Load feedback if exists
+        feedback_path = Path("analyst_feedback.csv")
+        if feedback_path.exists():
+            feedback_df = pd.read_csv(feedback_path)
+        else:
+            feedback_df = pd.DataFrame(columns=['transaction_id', 'label', 'reviewer', 'timestamp'])
+        # Merge feedback into df
+        df = df.merge(feedback_df[['transaction_id', 'label', 'reviewer', 'timestamp']], on='transaction_id', how='left')
+        # Show only flagged transactions
+        flagged = df[df['is_fraud_suspect']]
+        st.write(f"Flagged transactions: {len(flagged)}")
+        for idx, row in flagged.iterrows():
+            st.markdown(f"---\n**Transaction ID:** {row['transaction_id']} | **Amount:** {row['amount']:.2f} | **Sender:** {row['customer_id']} | **Status:** {'Reviewed' if pd.notnull(row['label']) else 'Pending'}")
+            if pd.isnull(row['label']):
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    if st.button(f"Fraud_{row['transaction_id']}", key=f"fraud_{row['transaction_id']}"):
+                        self.save_feedback(row['transaction_id'], 'Fraud')
+                        st.success("Labeled as Fraud!")
+                        st.rerun()
+                with col2:
+                    if st.button(f"Not Fraud_{row['transaction_id']}", key=f"notfraud_{row['transaction_id']}"):
+                        self.save_feedback(row['transaction_id'], 'Not Fraud')
+                        st.success("Labeled as Not Fraud!")
+                        st.rerun()
+                with col3:
+                    if st.button(f"Uncertain_{row['transaction_id']}", key=f"uncertain_{row['transaction_id']}"):
+                        self.save_feedback(row['transaction_id'], 'Uncertain')
+                        st.success("Labeled as Uncertain!")
+                        st.rerun()
+            else:
+                st.info(f"Already reviewed: {row.get('label', 'N/A')} by {row.get('reviewer', 'N/A')} at {row.get('timestamp', 'N/A')}")
+
+    def save_feedback(self, transaction_id, label):
+        """Save analyst feedback to CSV."""
+        feedback_path = Path("analyst_feedback.csv")
+        reviewer = os.getenv("USER", "analyst")
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        new_row = pd.DataFrame([[transaction_id, label, reviewer, timestamp]], columns=['transaction_id', 'label', 'reviewer', 'timestamp'])
+        if feedback_path.exists():
+            feedback_df = pd.read_csv(feedback_path)
+            feedback_df = pd.concat([feedback_df, new_row], ignore_index=True)
+        else:
+            feedback_df = new_row
+        feedback_df.to_csv(feedback_path, index=False)
+    
+    def fraud_intelligence_network(self):
+        """Fraud Intelligence Network - Connect with other agents and systems."""
+        st.header("🌐 Fraud Intelligence Network")
+        st.markdown("Connect with other fraud detection agents and intelligence sources")
+        
+        # Network Status
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Connected Agents", "3", delta="+1")
+        
+        with col2:
+            st.metric("Active Alerts", "12", delta="+3")
+        
+        with col3:
+            st.metric("Network Uptime", "99.8%", delta="+0.1%")
+        
+        # Agent Connections
+        st.subheader("🤖 Connected Agents")
+        
+        agents = [
+            {
+                "name": "Jakarta Bank Consortium Agent",
+                "status": "🟢 Online",
+                "location": "Jakarta, Indonesia",
+                "specialization": "BI-FAST fraud patterns",
+                "last_update": "2 minutes ago"
+            },
+            {
+                "name": "Singapore Regional Agent",
+                "status": "🟢 Online", 
+                "location": "Singapore",
+                "specialization": "ASEAN fraud trends",
+                "last_update": "5 minutes ago"
+            },
+            {
+                "name": "Global AML Network Agent",
+                "status": "🟡 Limited",
+                "location": "Global",
+                "specialization": "International money laundering",
+                "last_update": "15 minutes ago"
+            }
+        ]
+        
+        for agent in agents:
+            with st.expander(f"{agent['name']} - {agent['status']}"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write(f"**Location:** {agent['location']}")
+                    st.write(f"**Specialization:** {agent['specialization']}")
+                with col2:
+                    st.write(f"**Last Update:** {agent['last_update']}")
+                    if st.button(f"Request Intel from {agent['name']}", key=f"intel_{agent['name']}"):
+                        st.info("Requesting intelligence data...")
+                        # Simulate API call
+                        time.sleep(1)
+                        st.success("Intelligence data received!")
+        
+        # Real-time Intelligence Feed
+        st.subheader("📡 Real-time Intelligence Feed")
+        
+        intelligence_alerts = [
+            {
+                "source": "Jakarta Bank Consortium",
+                "alert": "New mule account pattern detected in South Jakarta",
+                "severity": "High",
+                "timestamp": "2 minutes ago",
+                "affected_banks": ["BCA", "Mandiri", "BNI"]
+            },
+            {
+                "source": "Singapore Regional Agent", 
+                "alert": "Cross-border fraud ring targeting Indonesian e-commerce",
+                "severity": "Medium",
+                "timestamp": "8 minutes ago",
+                "affected_banks": ["DBS", "OCBC", "UOB"]
+            },
+            {
+                "source": "Global AML Network",
+                "alert": "Cryptocurrency-based money laundering via Indonesian exchanges",
+                "severity": "High", 
+                "timestamp": "12 minutes ago",
+                "affected_banks": ["Multiple"]
+            }
+        ]
+        
+        for alert in intelligence_alerts:
+            severity_color = {"High": "🔴", "Medium": "🟡", "Low": "🟢"}
+            with st.container():
+                col1, col2, col3 = st.columns([1, 3, 1])
+                with col1:
+                    st.write(f"{severity_color[alert['severity']]} **{alert['severity']}**")
+                with col2:
+                    st.write(f"**{alert['source']}:** {alert['alert']}")
+                    st.caption(f"Affected: {alert['affected_banks']}")
+                with col3:
+                    st.caption(alert['timestamp'])
+                st.divider()
+        
+        # Network Configuration
+        st.subheader("⚙️ Network Configuration")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("API Endpoints")
+            endpoints = {
+                "BI-FAST API": "https://api.bi.go.id/fraud-alerts",
+                "Bank Consortium": "https://api.indonesian-banks.com/shared-intel", 
+                "Global Fraud Network": "https://api.fraud-intelligence.com/alerts"
+            }
+            
+            for name, url in endpoints.items():
+                st.text_input(f"{name} URL", value=url, key=f"endpoint_{name}")
+        
+        with col2:
+            st.subheader("Connection Settings")
+            st.checkbox("Auto-connect to new agents", value=True)
+            st.checkbox("Share local fraud patterns", value=True)
+            st.checkbox("Receive global alerts", value=True)
+            st.slider("Update frequency (minutes)", 1, 60, 5)
+        
+        # Manual Intelligence Sharing
+        st.subheader("📤 Share Intelligence")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            pattern_type = st.selectbox("Pattern Type", ["Account Takeover", "Mule Account", "Synthetic Identity", "Money Laundering"])
+            description = st.text_area("Pattern Description")
+        
+        with col2:
+            severity = st.selectbox("Severity", ["Low", "Medium", "High", "Critical"])
+            affected_banks = st.multiselect("Affected Banks", ["BCA", "Mandiri", "BNI", "BRI", "CIMB Niaga"])
+        
+        if st.button("🚀 Share with Network"):
+            st.success("Intelligence shared with connected agents!")
+            st.info("Other agents will receive this pattern within 30 seconds")
     
     def analyze_transaction(self, amount, transaction_type, location, card_present, 
                           customer_id, hour, merchant_category, device_type):

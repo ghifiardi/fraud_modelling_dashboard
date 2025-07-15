@@ -1,0 +1,6 @@
+transaction_id,label,reviewer,timestamp
+TXN_000015,Uncertain,raditio.ghifiardigmail.com,2025-07-15 21:14:37
+TXN_000020,Not Fraud,raditio.ghifiardigmail.com,2025-07-15 21:42:36
+TXN_000026,Fraud,raditio.ghifiardigmail.com,2025-07-15 21:42:39
+TXN_000049,Uncertain,raditio.ghifiardigmail.com,2025-07-15 21:42:41
+TXN_000050,Not Fraud,raditio.ghifiardigmail.com,2025-07-15 21:42:43
