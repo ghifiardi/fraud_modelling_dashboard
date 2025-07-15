@@ -24,50 +24,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from bank_fraud_detector import BankFraudDetector
 import joblib
 
-# --- Chatbot Sidebar (Ollama LLM) ---
-st.sidebar.header("💬 AI Chatbot Assistant")
+# Import the new chatbot service
+from llm_chatbot import create_chatbot_ui
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
-user_input = st.sidebar.text_input("Ask me anything about fraud detection...")
-
-if user_input:
-    # Call your local Ollama server
-    try:
-        response = requests.post(
-            "http://localhost:11434/api/chat",
-            json={
-                "model": "mistral:7b-instruct",
-                "messages": [
-                    {"role": "system", "content": "You are a helpful fraud detection assistant. You help users understand fraud detection systems, explain model predictions, and provide guidance on using the dashboard."},
-                    {"role": "user", "content": user_input}
-                ],
-                "stream": False  # Disable streaming for simpler handling
-            },
-            timeout=60
-        )
-        response.raise_for_status()
-        data = response.json()
-        answer = data.get("message", {}).get("content", "[No content in response]")
-    except Exception as e:
-        answer = f"[Error contacting Ollama LLM: {e}]"
-        st.sidebar.error(f"Error: {e}")
-    
-    st.session_state.chat_history.append(("user", user_input))
-    st.session_state.chat_history.append(("assistant", answer))
-
-# Display chat history in sidebar
-for role, msg in st.session_state.chat_history:
-    if role == "user":
-        st.sidebar.markdown(f"**You:** {msg}")
-    else:
-        st.sidebar.markdown(f"**Assistant:** {msg}")
-
-# Add a clear chat button
-if st.sidebar.button("Clear Chat"):
-    st.session_state.chat_history = []
-    st.rerun()
+# Create the chatbot UI with multiple fallback options
+create_chatbot_ui()
 
 
 class FraudDetectionDashboard:
