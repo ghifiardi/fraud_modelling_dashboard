@@ -27,8 +27,8 @@ import joblib
 # Import the new chatbot service
 from llm_chatbot import create_chatbot_ui
 
-# Create the chatbot UI with multiple fallback options
-create_chatbot_ui()
+# Remove the chatbot UI creation from module level to prevent infinite loops
+# create_chatbot_ui()  # This was causing the infinite loop
 
 
 class FraudDetectionDashboard:
@@ -41,8 +41,10 @@ class FraudDetectionDashboard:
         """Load the trained fraud detection model."""
         try:
             if os.path.exists(self.model_path):
-                self.detector = BankFraudDetector()
-                self.detector.load_bank_model(self.model_path)
+                if self.detector is None:  # Only load if not already loaded
+                    self.detector = BankFraudDetector()
+                    self.detector.load_bank_model(self.model_path)
+                    print("✓ Bank fraud detection model loaded successfully")
                 return True
             else:
                 st.warning("Model not found. Please train the model first.")
@@ -807,6 +809,8 @@ class FraudDetectionDashboard:
 def main():
     """Main function to run the dashboard."""
     dashboard = FraudDetectionDashboard()
+    # Create the chatbot UI with multiple fallback options
+    create_chatbot_ui()
     dashboard.run_dashboard()
 
 if __name__ == "__main__":
