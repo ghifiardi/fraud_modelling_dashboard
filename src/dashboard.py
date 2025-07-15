@@ -626,7 +626,7 @@ class FraudDetectionDashboard:
             
             model_choice = st.selectbox(
                 "Model",
-                ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
+                ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
                 help="Choose the OpenAI model to use"
             )
         
@@ -786,142 +786,189 @@ class FraudDetectionDashboard:
     
     def generate_code_with_openai(self, prompt, api_key, model, temperature, max_tokens):
         """Generate code using OpenAI API."""
-        from openai import OpenAI
-        
-        client = OpenAI(api_key=api_key)
-        
-        system_prompt = """You are an expert Python developer specializing in fraud detection systems. 
-        Generate clean, well-documented code that follows best practices for financial applications.
-        Include proper error handling, logging, and security considerations."""
-        
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
-        
-        return response.choices[0].message.content
+        try:
+            from openai import OpenAI
+            
+            client = OpenAI(api_key=api_key)
+            
+            system_prompt = """You are an expert Python developer specializing in fraud detection systems. 
+            Generate clean, well-documented code that follows best practices for financial applications.
+            Include proper error handling, logging, and security considerations."""
+            
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            
+            return response.choices[0].message.content
+        except Exception as e:
+            error_msg = str(e)
+            if "model_not_found" in error_msg:
+                return f"❌ Model '{model}' not found or not accessible. Please try a different model (gpt-4o, gpt-4o-mini, or gpt-3.5-turbo)."
+            elif "invalid_api_key" in error_msg:
+                return "❌ Invalid API key. Please check your OpenAI API key."
+            elif "quota_exceeded" in error_msg:
+                return "❌ API quota exceeded. Please check your OpenAI account usage."
+            else:
+                return f"❌ Error: {error_msg}"
     
     def analyze_data_with_openai(self, analysis_type, api_key, model, temperature, max_tokens):
         """Analyze data using OpenAI API."""
-        from openai import OpenAI
-        
-        client = OpenAI(api_key=api_key)
-        
-        # Sample data for analysis
-        sample_data = {
-            "total_transactions": 1247,
-            "fraud_count": 8,
-            "fraud_rate": 0.64,
-            "avg_amount": 245.67,
-            "high_risk_transactions": 23
-        }
-        
-        prompt = f"""Analyze the following fraud detection data and provide insights for {analysis_type}:
-        
-        Data: {sample_data}
-        
-        Please provide:
-        1. Key insights and patterns
-        2. Potential risk factors
-        3. Recommendations for improvement
-        4. Statistical analysis
-        """
-        
-        response = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
-        
-        return response.choices[0].message.content
+        try:
+            from openai import OpenAI
+            
+            client = OpenAI(api_key=api_key)
+            
+            # Sample data for analysis
+            sample_data = {
+                "total_transactions": 1247,
+                "fraud_count": 8,
+                "fraud_rate": 0.64,
+                "avg_amount": 245.67,
+                "high_risk_transactions": 23
+            }
+            
+            prompt = f"""Analyze the following fraud detection data and provide insights for {analysis_type}:
+            
+            Data: {sample_data}
+            
+            Please provide:
+            1. Key insights and patterns
+            2. Potential risk factors
+            3. Recommendations for improvement
+            4. Statistical analysis
+            """
+            
+            response = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            
+            return response.choices[0].message.content
+        except Exception as e:
+            error_msg = str(e)
+            if "model_not_found" in error_msg:
+                return f"❌ Model '{model}' not found or not accessible. Please try a different model."
+            elif "invalid_api_key" in error_msg:
+                return "❌ Invalid API key. Please check your OpenAI API key."
+            else:
+                return f"❌ Error: {error_msg}"
     
     def generate_report_with_openai(self, report_type, api_key, model, temperature, max_tokens):
         """Generate reports using OpenAI API."""
-        from openai import OpenAI
-        
-        client = OpenAI(api_key=api_key)
-        
-        prompt = f"""Generate a comprehensive {report_type} for a fraud detection system.
-        
-        Include:
-        1. Executive Summary
-        2. Key Metrics and Performance
-        3. Fraud Trends and Patterns
-        4. Risk Assessment
-        5. Recommendations
-        6. Action Items
-        
-        Format as markdown with proper headers and structure."""
-        
-        response = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
-        
-        return response.choices[0].message.content
+        try:
+            from openai import OpenAI
+            
+            client = OpenAI(api_key=api_key)
+            
+            prompt = f"""Generate a comprehensive {report_type} for a fraud detection system.
+            
+            Include:
+            1. Executive Summary
+            2. Key Metrics and Performance
+            3. Fraud Trends and Patterns
+            4. Risk Assessment
+            5. Recommendations
+            6. Action Items
+            
+            Format as markdown with proper headers and structure."""
+            
+            response = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            
+            return response.choices[0].message.content
+        except Exception as e:
+            error_msg = str(e)
+            if "model_not_found" in error_msg:
+                return f"❌ Model '{model}' not found or not accessible. Please try a different model."
+            elif "invalid_api_key" in error_msg:
+                return "❌ Invalid API key. Please check your OpenAI API key."
+            else:
+                return f"❌ Error: {error_msg}"
     
     def explain_prediction_with_openai(self, transaction, api_key, model, temperature, max_tokens):
         """Explain model predictions using OpenAI API."""
-        from openai import OpenAI
-        
-        client = OpenAI(api_key=api_key)
-        
-        prompt = f"""Explain why this transaction was flagged as high risk:
-        
-        Transaction: {transaction}
-        
-        Please explain:
-        1. Which factors contributed to the high risk score
-        2. What each factor means in terms of fraud risk
-        3. Why this combination of factors is suspicious
-        4. What actions should be taken
-        5. How to verify if this is actually fraud
-        
-        Provide a clear, non-technical explanation suitable for business users."""
-        
-        response = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
-        
-        return response.choices[0].message.content
+        try:
+            from openai import OpenAI
+            
+            client = OpenAI(api_key=api_key)
+            
+            prompt = f"""Explain why this transaction was flagged as high risk:
+            
+            Transaction: {transaction}
+            
+            Please explain:
+            1. Which factors contributed to the high risk score
+            2. What each factor means in terms of fraud risk
+            3. Why this combination of factors is suspicious
+            4. What actions should be taken
+            5. How to verify if this is actually fraud
+            
+            Provide a clear, non-technical explanation suitable for business users."""
+            
+            response = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            
+            return response.choices[0].message.content
+        except Exception as e:
+            error_msg = str(e)
+            if "model_not_found" in error_msg:
+                return f"❌ Model '{model}' not found or not accessible. Please try a different model."
+            elif "invalid_api_key" in error_msg:
+                return "❌ Invalid API key. Please check your OpenAI API key."
+            else:
+                return f"❌ Error: {error_msg}"
     
     def custom_openai_prompt(self, prompt, api_key, model, temperature, max_tokens):
         """Send custom prompts to OpenAI API."""
-        from openai import OpenAI
-        
-        client = OpenAI(api_key=api_key)
-        
-        system_prompt = """You are an expert fraud detection analyst with deep knowledge of:
-        - Machine learning models for fraud detection
-        - Financial transaction analysis
-        - Risk assessment and management
-        - Banking regulations and compliance
-        - Data analysis and visualization
-        
-        Provide helpful, accurate, and actionable insights."""
-        
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=temperature,
-            max_tokens=max_tokens
-        )
-        
-        return response.choices[0].message.content
+        try:
+            from openai import OpenAI
+            
+            client = OpenAI(api_key=api_key)
+            
+            system_prompt = """You are an expert fraud detection analyst with deep knowledge of:
+            - Machine learning models for fraud detection
+            - Financial transaction analysis
+            - Risk assessment and management
+            - Banking regulations and compliance
+            - Data analysis and visualization
+            
+            Provide helpful, accurate, and actionable insights."""
+            
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            
+            return response.choices[0].message.content
+        except Exception as e:
+            error_msg = str(e)
+            if "model_not_found" in error_msg:
+                return f"❌ Model '{model}' not found or not accessible. Please try a different model."
+            elif "invalid_api_key" in error_msg:
+                return "❌ Invalid API key. Please check your OpenAI API key."
+            else:
+                return f"❌ Error: {error_msg}"
     
     def analyze_transaction(self, amount, transaction_type, location, card_present, 
                           customer_id, hour, merchant_category, device_type):
