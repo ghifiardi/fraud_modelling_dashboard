@@ -786,15 +786,15 @@ class FraudDetectionDashboard:
     
     def generate_code_with_openai(self, prompt, api_key, model, temperature, max_tokens):
         """Generate code using OpenAI API."""
-        import openai
+        from openai import OpenAI
         
-        openai.api_key = api_key
+        client = OpenAI(api_key=api_key)
         
         system_prompt = """You are an expert Python developer specializing in fraud detection systems. 
         Generate clean, well-documented code that follows best practices for financial applications.
         Include proper error handling, logging, and security considerations."""
         
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": system_prompt},
@@ -808,9 +808,9 @@ class FraudDetectionDashboard:
     
     def analyze_data_with_openai(self, analysis_type, api_key, model, temperature, max_tokens):
         """Analyze data using OpenAI API."""
-        import openai
+        from openai import OpenAI
         
-        openai.api_key = api_key
+        client = OpenAI(api_key=api_key)
         
         # Sample data for analysis
         sample_data = {
@@ -832,7 +832,7 @@ class FraudDetectionDashboard:
         4. Statistical analysis
         """
         
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
@@ -843,9 +843,9 @@ class FraudDetectionDashboard:
     
     def generate_report_with_openai(self, report_type, api_key, model, temperature, max_tokens):
         """Generate reports using OpenAI API."""
-        import openai
+        from openai import OpenAI
         
-        openai.api_key = api_key
+        client = OpenAI(api_key=api_key)
         
         prompt = f"""Generate a comprehensive {report_type} for a fraud detection system.
         
@@ -859,7 +859,7 @@ class FraudDetectionDashboard:
         
         Format as markdown with proper headers and structure."""
         
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
@@ -870,9 +870,9 @@ class FraudDetectionDashboard:
     
     def explain_prediction_with_openai(self, transaction, api_key, model, temperature, max_tokens):
         """Explain model predictions using OpenAI API."""
-        import openai
+        from openai import OpenAI
         
-        openai.api_key = api_key
+        client = OpenAI(api_key=api_key)
         
         prompt = f"""Explain why this transaction was flagged as high risk:
         
@@ -887,7 +887,7 @@ class FraudDetectionDashboard:
         
         Provide a clear, non-technical explanation suitable for business users."""
         
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
@@ -898,9 +898,9 @@ class FraudDetectionDashboard:
     
     def custom_openai_prompt(self, prompt, api_key, model, temperature, max_tokens):
         """Send custom prompts to OpenAI API."""
-        import openai
+        from openai import OpenAI
         
-        openai.api_key = api_key
+        client = OpenAI(api_key=api_key)
         
         system_prompt = """You are an expert fraud detection analyst with deep knowledge of:
         - Machine learning models for fraud detection
@@ -911,7 +911,7 @@ class FraudDetectionDashboard:
         
         Provide helpful, accurate, and actionable insights."""
         
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": system_prompt},
