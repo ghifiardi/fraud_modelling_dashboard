@@ -89,33 +89,199 @@ class FraudDetectionDashboard:
             initial_sidebar_state="expanded"
         )
         
-        # Custom CSS for better styling
+        # Enhanced Custom CSS for modern styling
         st.markdown("""
         <style>
+        /* Global styles */
         .main-header {
             font-size: 3rem;
             font-weight: bold;
-            color: #1f77b4;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             text-align: center;
             margin-bottom: 2rem;
         }
+        
+        /* Enhanced metric cards */
         .metric-card {
-            background-color: #f0f2f6;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            border-left: 4px solid #1f77b4;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin: 0.5rem 0;
         }
+        
+        /* Alert styling */
         .alert-high {
-            background-color: #ffebee;
-            border-left: 4px solid #f44336;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border-left: 4px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 1rem;
         }
         .alert-medium {
-            background-color: #fff3e0;
-            border-left: 4px solid #ff9800;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-left: 4px solid #ffd43b;
+            border-radius: 10px;
+            padding: 1rem;
         }
         .alert-low {
-            background-color: #e8f5e8;
-            border-left: 4px solid #4caf50;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-left: 4px solid #51cf66;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        
+        /* Dashboard containers */
+        .dashboard-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            color: white;
+        }
+        
+        /* Enhanced metric values */
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Risk gauge styling */
+        .risk-gauge {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        /* Transaction feed styling */
+        .transaction-feed {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        /* Alert panel styling */
+        .alert-panel {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        /* Chart container styling */
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        /* Geographic map styling */
+        .geographic-map {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        /* Network distribution styling */
+        .network-distribution {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        /* Risk factors styling */
+        .risk-factors {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        /* Enhanced Streamlit metric styling */
+        .stMetric > div > div {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .stMetric > div > div > div {
+            color: white !important;
+        }
+        
+        /* Tab styling */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 8px;
+        }
+        .stTabs [data-baseweb="tab"] {
+            background-color: #f0f2f6;
+            border-radius: 8px 8px 0 0;
+            padding: 10px 16px;
+            color: #666;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        /* Sidebar styling */
+        .css-1d391kg {
+            background-color: #f8f9fa;
+        }
+        
+        /* Button styling */
+        .stButton > button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+        }
+        .stButton > button:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Dataframe styling */
+        .dataframe {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        /* Text input styling */
+        .stTextInput > div > div > input {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+        .stTextInput > div > div > input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        /* Selectbox styling */
+        .stSelectbox > div > div > div {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+        .stSelectbox > div > div > div:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
         }
         </style>
         """, unsafe_allow_html=True)
@@ -198,61 +364,564 @@ class FraudDetectionDashboard:
         st.sidebar.info(f"Last Updated: {datetime.datetime.now().strftime('%H:%M:%S')}")
     
     def real_time_dashboard(self):
-        """Real-time monitoring dashboard."""
-        st.header("📊 Real-time Monitoring")
+        """Revamped real-time dashboard with modern UI/UX design and better proportions."""
         
-        # Key Metrics Row
+        # Custom CSS for enhanced styling
+        st.markdown("""
+        <style>
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            color: white;
+            text-align: center;
+        }
+        .metric-container {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 0.5rem 0;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .metric-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .risk-gauge {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .transaction-feed {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .alert-panel {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .geographic-map {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .network-distribution {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .risk-factors {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Enhanced Header
+        st.markdown("""
+        <div class="dashboard-header">
+            <h1 style="margin: 0; font-size: 2.5rem;">🛡️ Real-Time Transaction Monitoring</h1>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Live fraud detection and risk assessment dashboard</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Generate real-time data
+        current_time = datetime.datetime.now()
+        
+        # Top-level metrics with enhanced styling
+        st.markdown("### 📊 Key Performance Indicators")
+        
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            st.metric(
-                label="Transactions Today",
-                value="1,247",
-                delta="+12%"
-            )
+            st.markdown("""
+            <div class="metric-container">
+                <div class="metric-value">1,247</div>
+                <div class="metric-label">📊 Total Transactions</div>
+                <div style="font-size: 0.9rem; margin-top: 0.5rem;">↗️ +23 (1.9%)</div>
+            </div>
+            """, unsafe_allow_html=True)
         
         with col2:
-            st.metric(
-                label="Fraud Detected",
-                value="8",
-                delta="-2",
-                delta_color="inverse"
-            )
+            st.markdown("""
+            <div class="metric-container">
+                <div class="metric-value">98.9%</div>
+                <div class="metric-label">✅ Approval Rate</div>
+                <div style="font-size: 0.9rem; margin-top: 0.5rem;">↗️ +0.2%</div>
+            </div>
+            """, unsafe_allow_html=True)
         
         with col3:
-            st.metric(
-                label="Success Rate",
-                value="99.4%",
-                delta="+0.2%"
-            )
+            st.markdown("""
+            <div class="metric-container">
+                <div class="metric-value">1.1%</div>
+                <div class="metric-label">❌ Decline Rate</div>
+                <div style="font-size: 0.9rem; margin-top: 0.5rem;">↘️ -0.2%</div>
+            </div>
+            """, unsafe_allow_html=True)
         
         with col4:
-            st.metric(
-                label="Avg Response Time",
-                value="0.8s",
-                delta="-0.1s"
+            st.markdown("""
+            <div class="metric-container">
+                <div class="metric-value">3</div>
+                <div class="metric-label">🚨 High Risk Alerts</div>
+                <div style="font-size: 0.9rem; margin-top: 0.5rem;">↗️ +1 (50%)</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Main dashboard layout with better proportions
+        st.markdown("### 📈 Transaction Analytics")
+        
+        # First row: Transaction volume and risk assessment
+        col1, col2 = st.columns([3, 2])
+        
+        with col1:
+            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+            st.subheader("📊 Transaction Volume (Last 24 Hours)")
+            
+            # Generate enhanced time series data
+            hours = list(range(24))
+            base_volumes = [40 + 30*np.sin(h/24 * 2*np.pi) + np.random.normal(0, 5) for h in hours]
+            volumes = [max(0, int(v)) for v in base_volumes]
+            
+            # Create enhanced line chart
+            fig = go.Figure()
+            
+            # Main volume line with gradient
+            fig.add_trace(go.Scatter(
+                x=hours, y=volumes,
+                mode='lines+markers',
+                name='Transaction Volume',
+                line=dict(color='#667eea', width=4, shape='spline'),
+                marker=dict(size=8, color='#667eea', line=dict(width=2, color='white')),
+                fill='tonexty',
+                fillcolor='rgba(102, 126, 234, 0.1)'
+            ))
+            
+            # Add trend line
+            z = np.polyfit(hours, volumes, 1)
+            p = np.poly1d(z)
+            fig.add_trace(go.Scatter(
+                x=hours, y=p(hours),
+                mode='lines',
+                name='Trend',
+                line=dict(color='#764ba2', width=2, dash='dash')
+            ))
+            
+            # Add threshold lines
+            high_water = max(volumes) * 1.05
+            low_water = min(volumes) * 0.95
+            
+            fig.add_hline(y=high_water, line_dash="dash", line_color="#ff6b6b", 
+                         annotation_text="High Alert Threshold", annotation_position="top right")
+            fig.add_hline(y=low_water, line_dash="dash", line_color="#51cf66", 
+                         annotation_text="Low Alert Threshold", annotation_position="bottom right")
+            
+            fig.update_layout(
+                title="",
+                xaxis_title="Hour of Day",
+                yaxis_title="Number of Transactions",
+                height=400,
+                showlegend=True,
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(size=12),
+                margin=dict(l=50, r=50, t=30, b=50)
             )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         
-        # Charts Row
+        with col2:
+            st.markdown('<div class="risk-gauge">', unsafe_allow_html=True)
+            st.subheader("🎯 Risk Assessment")
+            
+            # Generate a sample risk score
+            risk_score = np.random.randint(25, 80)
+            
+            # Create enhanced gauge chart
+            fig = go.Figure(go.Indicator(
+                mode="gauge+number+delta",
+                value=risk_score,
+                domain={'x': [0, 1], 'y': [0, 1]},
+                title={'text': "Current Risk Score", 'font': {'size': 18}},
+                delta={'reference': 50, 'increasing': {'color': "red"}, 'decreasing': {'color': "green"}},
+                gauge={
+                    'axis': {'range': [None, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
+                    'bar': {'color': "#667eea", 'thickness': 0.3},
+                    'bgcolor': "white",
+                    'borderwidth': 2,
+                    'bordercolor': "gray",
+                    'steps': [
+                        {'range': [0, 30], 'color': "#51cf66"},
+                        {'range': [30, 60], 'color': "#ffd43b"},
+                        {'range': [60, 100], 'color': "#ff6b6b"}
+                    ],
+                    'threshold': {
+                        'line': {'color': "red", 'width': 4},
+                        'thickness': 0.75,
+                        'value': 70
+                    }
+                }
+            ))
+            
+            fig.update_layout(
+                height=300,
+                font=dict(size=14),
+                margin=dict(l=20, r=20, t=40, b=20)
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Risk factors with enhanced styling
+            st.subheader("🔍 Risk Factors")
+            
+            risk_factors = {
+                "Amount Anomaly": np.random.randint(20, 95),
+                "Time Pattern": np.random.randint(30, 80),
+                "Location Risk": np.random.randint(25, 75),
+                "Device Fingerprint": np.random.randint(15, 60)
+            }
+            
+            for factor, score in risk_factors.items():
+                color = "#ff6b6b" if score > 70 else "#ffd43b" if score > 40 else "#51cf66"
+                st.markdown(f"""
+                <div style="display: flex; justify-content: space-between; align-items: center; 
+                            margin: 0.5rem 0; padding: 0.5rem; background: rgba(255,255,255,0.7); 
+                            border-radius: 8px;">
+                    <span style="font-weight: 500;">{factor}</span>
+                    <span style="font-weight: bold; color: {color}; font-size: 1.2rem;">{score}/100</span>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Second row: Geographic distribution and network breakdown
+        st.markdown("### 🌍 Geographic & Network Analysis")
+        
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("🕒 Transaction Volume (Last 24h)")
-            self.plot_transaction_volume()
+            st.markdown('<div class="geographic-map">', unsafe_allow_html=True)
+            st.subheader("🗺️ Geographic Distribution")
+            
+            # Enhanced geographic data with more realistic distribution
+            states_data = {
+                'CA': {'volume': 85, 'fraud_rate': 0.8, 'color': '#ff6b6b'},
+                'NY': {'volume': 72, 'fraud_rate': 1.2, 'color': '#ffd43b'},
+                'TX': {'volume': 68, 'fraud_rate': 0.9, 'color': '#51cf66'},
+                'FL': {'volume': 65, 'fraud_rate': 1.5, 'color': '#ff6b6b'},
+                'IL': {'volume': 58, 'fraud_rate': 0.7, 'color': '#51cf66'},
+                'PA': {'volume': 52, 'fraud_rate': 0.6, 'color': '#51cf66'},
+                'OH': {'volume': 48, 'fraud_rate': 0.8, 'color': '#ffd43b'},
+                'GA': {'volume': 45, 'fraud_rate': 1.1, 'color': '#ffd43b'},
+                'NC': {'volume': 42, 'fraud_rate': 0.5, 'color': '#51cf66'},
+                'MI': {'volume': 38, 'fraud_rate': 0.9, 'color': '#ffd43b'}
+            }
+            
+            states = list(states_data.keys())
+            volumes = [states_data[state]['volume'] for state in states]
+            fraud_rates = [states_data[state]['fraud_rate'] for state in states]
+            colors = [states_data[state]['color'] for state in states]
+            
+            # Create enhanced bar chart with dual metrics
+            fig = go.Figure()
+            
+            # Primary volume bars
+            fig.add_trace(go.Bar(
+                x=states,
+                y=volumes,
+                name='Transaction Volume',
+                marker_color=colors,
+                opacity=0.8,
+                text=volumes,
+                textposition='auto',
+            ))
+            
+            # Add fraud rate as secondary axis
+            fig.add_trace(go.Scatter(
+                x=states,
+                y=fraud_rates,
+                name='Fraud Rate (%)',
+                yaxis='y2',
+                mode='lines+markers',
+                line=dict(color='#764ba2', width=3),
+                marker=dict(size=8, color='#764ba2')
+            ))
+            
+            fig.update_layout(
+                title="Transaction Volume & Fraud Rate by State",
+                xaxis_title="State",
+                yaxis_title="Transaction Volume",
+                yaxis2=dict(
+                    title="Fraud Rate (%)",
+                    overlaying="y",
+                    side="right",
+                    range=[0, 2]
+                ),
+                height=400,
+                showlegend=True,
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(size=12),
+                margin=dict(l=50, r=50, t=50, b=50)
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         
         with col2:
-            st.subheader("🎯 Fraud Detection Rate")
-            self.plot_fraud_detection_rate()
+            st.markdown('<div class="network-distribution">', unsafe_allow_html=True)
+            st.subheader("🌐 Network Distribution")
+            
+            # Enhanced network data with fraud rates
+            networks_data = {
+                'Visa': {'volume': 45, 'fraud_rate': 0.8, 'color': '#1f77b4'},
+                'Mastercard': {'volume': 35, 'fraud_rate': 1.1, 'color': '#ff7f0e'},
+                'Amex': {'volume': 12, 'fraud_rate': 0.6, 'color': '#2ca02c'},
+                'Discover': {'volume': 5, 'fraud_rate': 1.3, 'color': '#d62728'},
+                'Other': {'volume': 3, 'fraud_rate': 0.9, 'color': '#9467bd'}
+            }
+            
+            networks = list(networks_data.keys())
+            network_volumes = [networks_data[net]['volume'] for net in networks]
+            network_colors = [networks_data[net]['color'] for net in networks]
+            
+            # Create enhanced pie chart
+            fig = go.Figure(data=[go.Pie(
+                labels=networks,
+                values=network_volumes,
+                hole=0.4,
+                marker_colors=network_colors,
+                textinfo='label+percent',
+                textposition='inside',
+                insidetextorientation='radial'
+            )])
+            
+            fig.update_layout(
+                title="Transaction Volume by Network",
+                height=400,
+                showlegend=True,
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(size=12),
+                margin=dict(l=20, r=20, t=50, b=20)
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Add network fraud rate table
+            st.subheader("📊 Network Fraud Rates")
+            fraud_data = []
+            for net in networks:
+                fraud_data.append({
+                    'Network': net,
+                    'Volume (%)': networks_data[net]['volume'],
+                    'Fraud Rate (%)': networks_data[net]['fraud_rate']
+                })
+            
+            fraud_df = pd.DataFrame(fraud_data)
+            st.dataframe(fraud_df, use_container_width=True, hide_index=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
         
-        # Risk Distribution
-        st.subheader("⚠️ Risk Distribution")
-        col1, col2 = st.columns(2)
+        # Third row: Transaction types and recent activity
+        st.markdown("### 💳 Transaction Flow Health")
+        
+        col1, col2 = st.columns([2, 1])
         
         with col1:
-            self.plot_risk_distribution()
+            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+            
+            # Enhanced transaction type breakdown
+            transaction_types = {
+                "💳 Credit Transactions": {"count": 230, "decline_rate": 0.43, "fraud_rate": 0.8},
+                "🏦 Check Transactions": {"count": 16, "decline_rate": 0.0, "fraud_rate": 0.2},
+                "🏧 ATM Transactions": {"count": 11, "decline_rate": 9.09, "fraud_rate": 1.5},
+                "💳 Debit Transactions": {"count": 20, "decline_rate": 5.0, "fraud_rate": 0.6}
+            }
+            
+            # Create horizontal bar chart for transaction types
+            types = list(transaction_types.keys())
+            counts = [transaction_types[t]['count'] for t in types]
+            decline_rates = [transaction_types[t]['decline_rate'] for t in types]
+            
+            fig = go.Figure()
+            
+            fig.add_trace(go.Bar(
+                y=types,
+                x=counts,
+                orientation='h',
+                name='Transaction Count',
+                marker_color=['#667eea', '#764ba2', '#f093fb', '#f5576c'],
+                text=counts,
+                textposition='auto',
+            ))
+            
+            fig.update_layout(
+                title="Transaction Volume by Type",
+                xaxis_title="Number of Transactions",
+                height=300,
+                showlegend=False,
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(size=12),
+                margin=dict(l=50, r=50, t=50, b=50)
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Add decline rate indicators
+            st.subheader("📉 Decline Rate Analysis")
+            decline_cols = st.columns(4)
+            for i, (type_name, data) in enumerate(transaction_types.items()):
+                with decline_cols[i]:
+                    decline_color = "#ff6b6b" if data["decline_rate"] > 5 else "#51cf66"
+                    st.markdown(f"""
+                    <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.8); 
+                                border-radius: 8px; margin: 0.5rem 0;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: {decline_color};">
+                            {data['decline_rate']:.1f}%
+                        </div>
+                        <div style="font-size: 0.9rem; color: #666;">
+                            {type_name.split()[1]}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
         
         with col2:
-            self.plot_model_performance()
+            st.markdown('<div class="transaction-feed">', unsafe_allow_html=True)
+            st.subheader("📋 Recent Transactions")
+            
+            # Generate enhanced transaction data
+            transactions = []
+            for i in range(8):
+                tx_id = f"TXN_{np.random.randint(100000, 999999)}"
+                risk_level = np.random.choice(['Low', 'Medium', 'High'], p=[0.6, 0.3, 0.1])
+                amount = np.random.randint(10, 2000)
+                transactions.append({
+                    'ID': tx_id,
+                    'Risk': risk_level,
+                    'Amount': f"${amount:,}",
+                    'Time': f"{np.random.randint(0, 24):02d}:{np.random.randint(0, 60):02d}"
+                })
+            
+            # Display as enhanced list
+            for tx in transactions:
+                risk_color = "#51cf66" if tx['Risk'] == 'Low' else "#ffd43b" if tx['Risk'] == 'Medium' else "#ff6b6b"
+                st.markdown(f"""
+                <div style="display: flex; justify-content: space-between; align-items: center; 
+                            margin: 0.5rem 0; padding: 0.8rem; background: rgba(255,255,255,0.8); 
+                            border-radius: 8px; border-left: 4px solid {risk_color};">
+                    <div>
+                        <div style="font-weight: bold; font-size: 0.9rem;">{tx['ID']}</div>
+                        <div style="font-size: 0.8rem; color: #666;">{tx['Time']}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: bold; color: {risk_color};">{tx['Risk']}</div>
+                        <div style="font-size: 0.9rem;">{tx['Amount']}</div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Bottom section - Risk distribution and alerts
+        st.markdown("### 🚨 Risk Distribution & Alerts")
+        
+        col_risk_dist, col_alerts = st.columns(2)
+        
+        with col_risk_dist:
+            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+            
+            # Enhanced risk distribution
+            risk_levels = ['Low', 'Medium', 'High']
+            risk_counts = [65, 25, 10]  # Percentages
+            risk_colors = ['#51cf66', '#ffd43b', '#ff6b6b']
+            
+            fig = px.pie(
+                values=risk_counts, names=risk_levels,
+                title="Risk Level Distribution",
+                color_discrete_map={'Low': '#51cf66', 'Medium': '#ffd43b', 'High': '#ff6b6b'}
+            )
+            
+            fig.update_layout(
+                height=350,
+                showlegend=True,
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(size=12),
+                margin=dict(l=20, r=20, t=50, b=20)
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        with col_alerts:
+            st.markdown('<div class="alert-panel">', unsafe_allow_html=True)
+            st.subheader("⚠️ High-Priority Alerts")
+            
+            alerts = [
+                {"type": "High Risk Transaction", "count": 3, "severity": "High", "icon": "🔴"},
+                {"type": "Unusual Pattern", "count": 7, "severity": "Medium", "icon": "🟡"},
+                {"type": "Geographic Anomaly", "count": 2, "severity": "High", "icon": "🔴"},
+                {"type": "Device Mismatch", "count": 5, "severity": "Medium", "icon": "🟡"},
+                {"type": "Velocity Alert", "count": 4, "severity": "Medium", "icon": "🟡"},
+                {"type": "Amount Threshold", "count": 1, "severity": "High", "icon": "🔴"}
+            ]
+            
+            for alert in alerts:
+                severity_color = "#ff6b6b" if alert["severity"] == "High" else "#ffd43b"
+                st.markdown(f"""
+                <div style="display: flex; justify-content: space-between; align-items: center; 
+                            margin: 0.5rem 0; padding: 0.8rem; background: rgba(255,255,255,0.8); 
+                            border-radius: 8px; border-left: 4px solid {severity_color};">
+                    <div style="display: flex; align-items: center;">
+                        <span style="font-size: 1.2rem; margin-right: 0.5rem;">{alert['icon']}</span>
+                        <div>
+                            <div style="font-weight: bold;">{alert['type']}</div>
+                            <div style="font-size: 0.8rem; color: #666;">{alert['count']} instances</div>
+                        </div>
+                    </div>
+                    <div style="font-weight: bold; color: {severity_color};">
+                        {alert['severity']}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Auto-refresh functionality
+        if st.button("🔄 Refresh Data"):
+            st.rerun()
+        
+        # Add a timestamp
+        st.caption(f"Last updated: {current_time.strftime('%Y-%m-%d %H:%M:%S')}")
     
     def transaction_monitor(self):
         """Transaction monitoring interface."""
@@ -1048,13 +1717,22 @@ class FraudDetectionDashboard:
             model_results = result['model_predictions']
             
             for model_name, predictions in model_results.items():
-                col1, col2, col3 = st.columns(3)
+                col1, col2, col3, col4 = st.columns(4)
                 with col1:
                     st.write(f"**{model_name}**")
                 with col2:
-                    st.write(f"Prediction: {'Fraud' if predictions['prediction'] else 'Legitimate'}")
+                    prediction_text = "Fraud" if predictions['prediction'] == 1 else "Legitimate"
+                    prediction_color = "red" if predictions['prediction'] == 1 else "green"
+                    st.markdown(f"<span style='color: {prediction_color}; font-weight: bold;'>{prediction_text}</span>", unsafe_allow_html=True)
                 with col3:
-                    st.write(f"Probability: {predictions['probability']:.3f}")
+                    fraud_prob = predictions['probability']
+                    legitimate_prob = 1 - fraud_prob
+                    st.write(f"Fraud: {fraud_prob:.3f}")
+                with col4:
+                    st.write(f"Legitimate: {legitimate_prob:.3f}")
+            
+            # Add explanation
+            st.info("💡 **Note:** Risk level is determined by the highest fraud probability from any model. Even if models predict 'Legitimate', high fraud probabilities may still trigger risk alerts.")
     
     def plot_transaction_volume(self):
         """Plot transaction volume over time."""

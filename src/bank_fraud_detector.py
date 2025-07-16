@@ -247,8 +247,9 @@ class BankFraudDetector:
         X = df[available_features]
         y = df[self.fraud_column]
         
-        # Handle missing values
-        X = self.handle_missing_data(X)
+        # Impute missing values on engineered features only
+        self.imputer = SimpleImputer(strategy='median')
+        X = pd.DataFrame(self.imputer.fit_transform(X), columns=available_features)
         
         # Split data
         X_train, X_test, y_train, y_test = train_test_split(
@@ -314,11 +315,12 @@ class BankFraudDetector:
         best_model = max(results.keys(), key=lambda x: results[x]['auc'])
         probabilities = results[best_model]['probabilities']
         
-        # Calculate thresholds for different alert levels
+        # Use more reasonable fixed thresholds instead of percentiles
+        # These thresholds are based on typical fraud detection practices
         thresholds = {
-            'high_risk': np.percentile(probabilities, 95),  # Top 5% risk
-            'medium_risk': np.percentile(probabilities, 85),  # Top 15% risk
-            'low_risk': np.percentile(probabilities, 70)   # Top 30% risk
+            'high_risk': 0.7,    # 70% probability of fraud
+            'medium_risk': 0.5,  # 50% probability of fraud  
+            'low_risk': 0.3      # 30% probability of fraud
         }
         
         self.risk_thresholds = thresholds
@@ -334,18 +336,27 @@ class BankFraudDetector:
         if not self.models or not self.feature_columns:
             print("❌ Models not trained. Please train models first.")
             return None
-        
-        # Prepare transaction data
-        features = transaction_data[self.feature_columns]
-        
+
+        import pandas as pd
+        # Accept either a Series or DataFrame row, convert to DataFrame
+        if isinstance(transaction_data, pd.Series):
+            transaction_df = transaction_data.to_frame().T
+        elif isinstance(transaction_data, dict):
+            transaction_df = pd.DataFrame([transaction_data])
+        else:
+            transaction_df = transaction_data.copy()
+
+        # Select only the feature columns
+        features = transaction_df[self.feature_columns]
+
         # Handle missing values
         if self.imputer:
-            features = self.imputer.transform(features.values.reshape(1, -1))
-        
+            features = self.imputer.transform(features)
+
         # Scale features
         if self.scaler:
             features = self.scaler.transform(features)
-        
+
         # Get predictions from all models
         predictions = {}
         for name, model in self.models.items():
@@ -357,13 +368,12 @@ class BankFraudDetector:
             else:
                 pred = model.predict(features)[0]
                 prob = model.predict_proba(features)[0, 1]
-            
             predictions[name] = {'prediction': pred, 'probability': prob}
-        
+
         # Determine risk level
         best_model = max(self.models.keys(), key=lambda x: predictions[x]['probability'])
         risk_prob = predictions[best_model]['probability']
-        
+
         if risk_prob >= self.risk_thresholds['high_risk']:
             risk_level = 'HIGH_RISK'
         elif risk_prob >= self.risk_thresholds['medium_risk']:
@@ -372,7 +382,7 @@ class BankFraudDetector:
             risk_level = 'LOW_RISK'
         else:
             risk_level = 'SAFE'
-        
+
         return {
             'risk_level': risk_level,
             'risk_probability': risk_prob,
