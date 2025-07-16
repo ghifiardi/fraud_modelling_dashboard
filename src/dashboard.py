@@ -626,9 +626,21 @@ class FraudDetectionDashboard:
             
             model_choice = st.selectbox(
                 "Model",
-                ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
+                ["gpt-4o", "gpt-4o-mini", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-3.5-turbo"],
                 help="Choose the OpenAI model to use"
             )
+            
+            # Model information
+            model_info = {
+                "gpt-4o": "Latest and most capable model (best for complex tasks)",
+                "gpt-4o-mini": "Fast and efficient (good balance of speed and capability)",
+                "gpt-4.1-mini": "New GPT-4.1 variant (optimized for efficiency)",
+                "gpt-4.1-nano": "Smallest GPT-4.1 model (fastest, most cost-effective)",
+                "gpt-3.5-turbo": "Reliable and cost-effective (good for most tasks)"
+            }
+            
+            if model_choice in model_info:
+                st.info(f"ℹ️ {model_info[model_choice]}")
         
         with col2:
             temperature = st.slider("Temperature", 0.0, 2.0, 0.7, 0.1)
@@ -809,7 +821,7 @@ class FraudDetectionDashboard:
         except Exception as e:
             error_msg = str(e)
             if "model_not_found" in error_msg:
-                return f"❌ Model '{model}' not found or not accessible. Please try a different model (gpt-4o, gpt-4o-mini, or gpt-3.5-turbo)."
+                return f"❌ Model '{model}' not found or not accessible. Please try a different model (gpt-4o, gpt-4o-mini, gpt-4.1-mini, gpt-4.1-nano, or gpt-3.5-turbo)."
             elif "invalid_api_key" in error_msg:
                 return "❌ Invalid API key. Please check your OpenAI API key."
             elif "quota_exceeded" in error_msg:
