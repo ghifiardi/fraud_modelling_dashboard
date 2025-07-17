@@ -10,6 +10,8 @@ import os
 import json
 import time
 from typing import Optional, Dict, Any
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import torch
 
 class LLMChatbotService:
     def __init__(self):
@@ -22,26 +24,30 @@ class LLMChatbotService:
             self.openai_api_key = os.getenv('OPENAI_API_KEY')
             self.huggingface_api_key = os.getenv('HUGGINGFACE_API_KEY')
         
+        self.selected_model = st.session_state.get('llm_model', 'openai')
+        
     def get_response(self, user_input: str, chat_history: list = None) -> str:
         """
         Get response from LLM with multiple fallback options
         """
-        # Try local Ollama first
-        response = self._try_ollama(user_input, chat_history)
-        if response:
-            return response
-            
-        # Try OpenAI if API key is available
-        if self.openai_api_key:
+        # Model selection logic
+        model = st.session_state.get('llm_model', 'openai')
+        if model == 'cisco_foundation':
+            response = self._try_cisco_foundation(user_input)
+            if response:
+                return response
+        elif model == 'openai':
             response = self._try_openai(user_input, chat_history)
             if response:
                 return response
-                
-        # Try HuggingFace Inference API
-        response = self._try_huggingface(user_input, chat_history)
-        if response:
-            return response
-            
+        elif model == 'huggingface':
+            response = self._try_huggingface(user_input, chat_history)
+            if response:
+                return response
+        elif model == 'ollama':
+            response = self._try_ollama(user_input, chat_history)
+            if response:
+                return response
         # Fallback to rule-based responses
         return self._rule_based_response(user_input)
     
@@ -149,6 +155,55 @@ class LLMChatbotService:
         except Exception as e:
             return None
     
+    def _try_cisco_foundation(self, user_input: str) -> str:
+        """Try Cisco Foundation-Sec-8B via transformers (local) or Hugging Face Inference API (cloud)."""
+        try:
+            # Try local transformers first
+            try:
+                tokenizer = AutoTokenizer.from_pretrained("fdtn-ai/Foundation-Sec-8B")
+                model = AutoModelForCausalLM.from_pretrained("fdtn-ai/Foundation-Sec-8B")
+                inputs = tokenizer(user_input, return_tensors="pt")
+                outputs = model.generate(
+                    inputs["input_ids"],
+                    max_new_tokens=256,
+                    do_sample=True,
+                    temperature=0.1,
+                    top_p=0.9,
+                )
+                response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+                response = response.replace(user_input, "").strip()
+                return response
+            except Exception:
+                # Fallback to Hugging Face Inference API
+                if not self.huggingface_api_key:
+                    return None
+                headers = {
+                    "Authorization": f"Bearer {self.huggingface_api_key}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "inputs": user_input,
+                    "parameters": {
+                        "max_new_tokens": 256,
+                        "temperature": 0.1,
+                        "do_sample": True,
+                        "return_full_text": False
+                    }
+                }
+                response = requests.post(
+                    "https://api-inference.huggingface.co/models/fdtn-ai/Foundation-Sec-8B",
+                    headers=headers,
+                    json=payload,
+                    timeout=60
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    if isinstance(data, list) and len(data) > 0:
+                        return data[0].get("generated_text", "").strip()
+                return None
+        except Exception as e:
+            return f"[Cisco Foundation-Sec-8B error] {e}"
+    
     def _rule_based_response(self, user_input: str) -> str:
         """Rule-based fallback responses"""
         user_input_lower = user_input.lower()
@@ -229,6 +284,19 @@ Keep responses concise, helpful, and focused on fraud detection. If you don't kn
 def create_chatbot_ui():
     """Create the chatbot UI in Streamlit sidebar"""
     st.sidebar.header("💬 AI Chatbot Assistant")
+    # Model selection
+    llm_model = st.sidebar.selectbox(
+        "Choose LLM Model",
+        ["openai", "huggingface", "ollama", "cisco_foundation"],
+        format_func=lambda x: {
+            "openai": "OpenAI (GPT-3.5/4)",
+            "huggingface": "HuggingFace (General)",
+            "ollama": "Local Ollama (Mistral)",
+            "cisco_foundation": "Cisco Foundation-Sec-8B (Cybersecurity)"
+        }[x],
+        index=["openai", "huggingface", "ollama", "cisco_foundation"].index(st.session_state.get('llm_model', 'openai'))
+    )
+    st.session_state['llm_model'] = llm_model
     
     # Initialize chatbot service
     if 'chatbot_service' not in st.session_state:
