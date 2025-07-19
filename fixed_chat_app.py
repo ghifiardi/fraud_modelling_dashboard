@@ -81,17 +81,17 @@ if prompt := st.chat_input("Ask me about fraud detection..."):
             # Add assistant response to chat history
             st.session_state.messages.append({"role": "assistant", "content": full_response})
             
-        except openai.error.AuthenticationError:
+        except openai.AuthenticationError:
             error_msg = "❌ **Authentication Error**: The API key is invalid or expired. Please check your OpenAI API key."
             message_placeholder.markdown(error_msg)
             st.session_state.messages.append({"role": "assistant", "content": error_msg})
             
-        except openai.error.RateLimitError:
+        except openai.RateLimitError:
             error_msg = "⚠️ **Rate Limit**: Too many requests. Please wait a moment and try again."
             message_placeholder.markdown(error_msg)
             st.session_state.messages.append({"role": "assistant", "content": error_msg})
             
-        except openai.error.APIError as e:
+        except openai.APIError as e:
             error_msg = f"❌ **API Error**: {str(e)}"
             message_placeholder.markdown(error_msg)
             st.session_state.messages.append({"role": "assistant", "content": error_msg})
