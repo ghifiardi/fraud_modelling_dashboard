@@ -21,14 +21,14 @@ import requests
 # Add src to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.bank_fraud_detector import BankFraudDetector
+from bank_fraud_detector import BankFraudDetector
 import joblib
 
 # Import the new chatbot service
-from src.llm_chatbot import create_chatbot_ui
+from llm_chatbot import create_chatbot_ui
 
 # Import the streaming fraud detection system
-from src.streaming_fraud_detector import create_streaming_dashboard_tab
+from streaming_fraud_detector import create_streaming_dashboard_tab
 
 # Remove the chatbot UI creation from module level to prevent infinite loops
 # create_chatbot_ui()  # This was causing the infinite loop
