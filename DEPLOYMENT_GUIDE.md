@@ -60,7 +60,7 @@ In Streamlit Cloud dashboard:
 1. **Go to App Settings** → **Secrets**
 2. **Add your OpenAI API key**:
 ```toml
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "your-openai-api-key-here"
 ```
 
 ### Step 5: Deploy

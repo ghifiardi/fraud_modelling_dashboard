@@ -346,7 +346,7 @@ git push -u origin main
 #### Step 3: Configure Secrets
 ```toml
 # In Streamlit Cloud Secrets
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "your-openai-api-key-here"
 ```
 
 ## 📖 User Guide
