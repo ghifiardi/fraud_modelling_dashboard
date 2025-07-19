@@ -4,11 +4,11 @@ Fixed Chat App - Using OpenAI library for better authentication
 """
 
 import streamlit as st
-import openai
+from openai import OpenAI
 import time
 
-# Configure OpenAI
-openai.api_key = "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"
+# Configure OpenAI client
+client = OpenAI(api_key="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")
 
 st.set_page_config(
     page_title="Fixed Fraud Detection Chat",
@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 st.title("💬 Fixed Fraud Detection Chat")
-st.markdown("Using OpenAI library for better authentication")
+st.markdown("Using OpenAI library v1.0+ for better authentication")
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -59,13 +59,12 @@ if prompt := st.chat_input("Ask me about fraud detection..."):
             
             # Show "thinking" indicator
             with st.spinner("🤔 Thinking..."):
-                # Make API call using OpenAI library
-                response = openai.ChatCompletion.create(
+                # Make API call using new OpenAI client
+                response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=messages,
                     max_tokens=500,
-                    temperature=0.7,
-                    timeout=30
+                    temperature=0.7
                 )
             
             # Extract response
@@ -81,30 +80,15 @@ if prompt := st.chat_input("Ask me about fraud detection..."):
             # Add assistant response to chat history
             st.session_state.messages.append({"role": "assistant", "content": full_response})
             
-        except openai.AuthenticationError:
-            error_msg = "❌ **Authentication Error**: The API key is invalid or expired. Please check your OpenAI API key."
-            message_placeholder.markdown(error_msg)
-            st.session_state.messages.append({"role": "assistant", "content": error_msg})
-            
-        except openai.RateLimitError:
-            error_msg = "⚠️ **Rate Limit**: Too many requests. Please wait a moment and try again."
-            message_placeholder.markdown(error_msg)
-            st.session_state.messages.append({"role": "assistant", "content": error_msg})
-            
-        except openai.APIError as e:
-            error_msg = f"❌ **API Error**: {str(e)}"
-            message_placeholder.markdown(error_msg)
-            st.session_state.messages.append({"role": "assistant", "content": error_msg})
-            
         except Exception as e:
-            error_msg = f"❌ **Unexpected Error**: {str(e)}"
+            error_msg = f"❌ **Error**: {str(e)}"
             message_placeholder.markdown(error_msg)
             st.session_state.messages.append({"role": "assistant", "content": error_msg})
 
 # Sidebar with information
 with st.sidebar:
     st.header("🔧 Debug Info")
-    st.info(f"API Key: {openai.api_key[:10]}...{openai.api_key[-4:]}")
+    st.info(f"API Key: {client.api_key[:10]}...{client.api_key[-4:]}")
     st.info(f"Messages in history: {len(st.session_state.messages)}")
     
     if st.button("Clear Chat History"):
@@ -129,4 +113,4 @@ with st.sidebar:
 
 # Footer
 st.markdown("---")
-st.markdown("**Status**: Using OpenAI library for better authentication handling") 
+st.markdown("**Status**: Using OpenAI library v1.0+ for better authentication handling") 
