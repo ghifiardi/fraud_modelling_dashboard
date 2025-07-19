@@ -21,11 +21,14 @@ import requests
 # Add src to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from bank_fraud_detector import BankFraudDetector
+from src.bank_fraud_detector import BankFraudDetector
 import joblib
 
 # Import the new chatbot service
-from llm_chatbot import create_chatbot_ui
+from src.llm_chatbot import create_chatbot_ui
+
+# Import the streaming fraud detection system
+from src.streaming_fraud_detector import create_streaming_dashboard_tab
 
 # Remove the chatbot UI creation from module level to prevent infinite loops
 # create_chatbot_ui()  # This was causing the infinite loop
@@ -33,25 +36,32 @@ from llm_chatbot import create_chatbot_ui
 
 class FraudDetectionDashboard:
     def __init__(self):
-        self.detector = None
         self.model_path = "models/bank_fraud_detector.pkl"
-        self.load_model()
+        self.detector = None
         
     def load_model(self):
         """Load the trained fraud detection model."""
-        try:
-            if os.path.exists(self.model_path):
-                if self.detector is None:  # Only load if not already loaded
+        if self.detector is None:
+            try:
+                if os.path.exists(self.model_path):
                     self.detector = BankFraudDetector()
                     self.detector.load_bank_model(self.model_path)
                     print("✓ Bank fraud detection model loaded successfully")
-                return True
-            else:
-                st.warning("Model not found. Please train the model first.")
-                return False
-        except Exception as e:
-            st.error(f"Error loading model: {e}")
-            return False
+                else:
+                    # Create and train a model if none exists
+                    st.info("Training new fraud detection model...")
+                    self.detector = BankFraudDetector()
+                    df = self.detector.create_sample_bank_dataset()
+                    df = self.detector.engineer_bank_features(df)
+                    results, X_test, y_test = self.detector.train_bank_models(df)
+                    self.detector.set_risk_thresholds(results, y_test)
+                    self.detector.save_bank_model(self.model_path)
+                    st.success("✓ New fraud detection model trained and saved!")
+            except Exception as e:
+                st.error(f"Error loading model: {e}")
+                return None
+        
+        return self.detector
     
     def generate_sample_transactions(self, n=100):
         """Generate sample transactions for demonstration."""
@@ -88,6 +98,9 @@ class FraudDetectionDashboard:
             layout="wide",
             initial_sidebar_state="expanded"
         )
+        
+        # Load model first
+        self.detector = self.load_model()
         
         # Enhanced Custom CSS for modern styling
         st.markdown("""
@@ -289,12 +302,16 @@ class FraudDetectionDashboard:
         # Header
         st.markdown('<h1 class="main-header">🛡️ AI Fraud Detection Monitor</h1>', unsafe_allow_html=True)
         
+        # Add streaming system notification
+        st.info("🚀 **NEW: Real-Time Streaming System Available!** Click on the '🚀 Streaming System' tab to experience Apache Kafka + Spark Streaming simulation with sub-second transaction processing!")
+        
         # Sidebar
         self.create_sidebar()
         
-        # Main content tabs
-        tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+        # Main content tabs - Move Streaming System to position 2 for better visibility
+        tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
             "📊 Real-time Dashboard", 
+            "🚀 Streaming System", 
             "🔍 Transaction Monitor", 
             "📈 Analytics", 
             "⚙️ Model Management",
@@ -308,28 +325,37 @@ class FraudDetectionDashboard:
             self.real_time_dashboard()
         
         with tab2:
-            self.transaction_monitor()
+            # Store detector in session state for streaming system
+            if self.detector:
+                st.session_state.detector = self.detector
+            create_streaming_dashboard_tab()
         
         with tab3:
-            self.analytics_dashboard()
+            self.transaction_monitor()
         
         with tab4:
-            self.model_management()
+            self.analytics_dashboard()
         
         with tab5:
-            self.alerts_and_logs()
+            self.model_management()
         
         with tab6:
-            self.analyst_review_tab()
+            self.alerts_and_logs()
         
         with tab7:
-            self.fraud_intelligence_network()
+            self.analyst_review_tab()
         
         with tab8:
+            self.fraud_intelligence_network()
+        
+        with tab9:
             self.openai_playground_tab()
     
     def create_sidebar(self):
         """Create the sidebar with controls and settings."""
+        # Create the chatbot UI first (this will appear at the top of sidebar)
+        create_chatbot_ui()
+        
         st.sidebar.title("🎛️ Control Panel")
         
         # Model Status
@@ -359,9 +385,31 @@ class FraudDetectionDashboard:
         if st.sidebar.button("📊 Generate Report"):
             self.generate_report()
         
+        # Streaming System Quick Access
+        st.sidebar.subheader("🚀 Streaming System")
+        if st.sidebar.button("Start Streaming Demo", type="primary"):
+            st.info("Navigate to the '🚀 Streaming System' tab to start the real-time fraud detection demo!")
+        
         # System Info
         st.sidebar.subheader("System Info")
         st.sidebar.info(f"Last Updated: {datetime.datetime.now().strftime('%H:%M:%S')}")
+        
+        # FraudLabs Pro Screening
+        st.sidebar.subheader("FraudLabs Pro Screening")
+        ip = st.sidebar.text_input("IP Address", "1.2.3.4", key="flp_ip")
+        email = st.sidebar.text_input("Email", "customer@example.com", key="flp_email")
+        amount = st.sidebar.number_input("Amount", min_value=0.0, value=100.0, key="flp_amount")
+        if st.sidebar.button("Screen Transaction", key="flp_screen"):
+            try:
+                result = fraudlabspro_screen_order(
+                    api_key="TNFUSCVIQFJEV4QYO10B7EONML4515EP",
+                    ip_address=ip,
+                    email=email,
+                    amount=amount
+                )
+                st.sidebar.write("FraudLabs Pro Result:", result)
+            except Exception as e:
+                st.sidebar.error(f"FraudLabs Pro Error: {e}")
     
     def real_time_dashboard(self):
         """Revamped real-time dashboard with modern UI/UX design and better proportions."""
@@ -628,31 +676,31 @@ class FraudDetectionDashboard:
             st.markdown('<div class="geographic-map">', unsafe_allow_html=True)
             st.subheader("🗺️ Geographic Distribution")
             
-            # Enhanced geographic data with more realistic distribution
-            states_data = {
-                'CA': {'volume': 85, 'fraud_rate': 0.8, 'color': '#ff6b6b'},
-                'NY': {'volume': 72, 'fraud_rate': 1.2, 'color': '#ffd43b'},
-                'TX': {'volume': 68, 'fraud_rate': 0.9, 'color': '#51cf66'},
-                'FL': {'volume': 65, 'fraud_rate': 1.5, 'color': '#ff6b6b'},
-                'IL': {'volume': 58, 'fraud_rate': 0.7, 'color': '#51cf66'},
-                'PA': {'volume': 52, 'fraud_rate': 0.6, 'color': '#51cf66'},
-                'OH': {'volume': 48, 'fraud_rate': 0.8, 'color': '#ffd43b'},
-                'GA': {'volume': 45, 'fraud_rate': 1.1, 'color': '#ffd43b'},
-                'NC': {'volume': 42, 'fraud_rate': 0.5, 'color': '#51cf66'},
-                'MI': {'volume': 38, 'fraud_rate': 0.9, 'color': '#ffd43b'}
+            # Enhanced geographic data for Indonesia
+            indonesia_data = {
+                'DKI Jakarta': {'volume': 85, 'fraud_rate': 0.8, 'color': '#ff6b6b'},
+                'Jawa Barat': {'volume': 72, 'fraud_rate': 1.2, 'color': '#ffd43b'},
+                'Jawa Tengah': {'volume': 68, 'fraud_rate': 0.9, 'color': '#51cf66'},
+                'Jawa Timur': {'volume': 65, 'fraud_rate': 1.5, 'color': '#ff6b6b'},
+                'Sumatera Utara': {'volume': 58, 'fraud_rate': 0.7, 'color': '#51cf66'},
+                'Sulawesi Selatan': {'volume': 52, 'fraud_rate': 0.6, 'color': '#51cf66'},
+                'Banten': {'volume': 48, 'fraud_rate': 0.8, 'color': '#ffd43b'},
+                'Bali': {'volume': 45, 'fraud_rate': 1.1, 'color': '#ffd43b'},
+                'Sumatera Selatan': {'volume': 42, 'fraud_rate': 0.5, 'color': '#51cf66'},
+                'Riau': {'volume': 38, 'fraud_rate': 0.9, 'color': '#ffd43b'}
             }
             
-            states = list(states_data.keys())
-            volumes = [states_data[state]['volume'] for state in states]
-            fraud_rates = [states_data[state]['fraud_rate'] for state in states]
-            colors = [states_data[state]['color'] for state in states]
+            provinces = list(indonesia_data.keys())
+            volumes = [indonesia_data[province]['volume'] for province in provinces]
+            fraud_rates = [indonesia_data[province]['fraud_rate'] for province in provinces]
+            colors = [indonesia_data[province]['color'] for province in provinces]
             
             # Create enhanced bar chart with dual metrics
             fig = go.Figure()
             
             # Primary volume bars
             fig.add_trace(go.Bar(
-                x=states,
+                x=provinces,
                 y=volumes,
                 name='Transaction Volume',
                 marker_color=colors,
@@ -663,7 +711,7 @@ class FraudDetectionDashboard:
             
             # Add fraud rate as secondary axis
             fig.add_trace(go.Scatter(
-                x=states,
+                x=provinces,
                 y=fraud_rates,
                 name='Fraud Rate (%)',
                 yaxis='y2',
@@ -673,8 +721,8 @@ class FraudDetectionDashboard:
             ))
             
             fig.update_layout(
-                title="Transaction Volume & Fraud Rate by State",
-                xaxis_title="State",
+                title="Transaction Volume & Fraud Rate by Province",
+                xaxis_title="Province",
                 yaxis_title="Transaction Volume",
                 yaxis2=dict(
                     title="Fraud Rate (%)",
@@ -697,12 +745,12 @@ class FraudDetectionDashboard:
             st.markdown('<div class="network-distribution">', unsafe_allow_html=True)
             st.subheader("🌐 Network Distribution")
             
-            # Enhanced network data with fraud rates
+            # Enhanced network data for Indonesia
             networks_data = {
                 'Visa': {'volume': 45, 'fraud_rate': 0.8, 'color': '#1f77b4'},
                 'Mastercard': {'volume': 35, 'fraud_rate': 1.1, 'color': '#ff7f0e'},
-                'Amex': {'volume': 12, 'fraud_rate': 0.6, 'color': '#2ca02c'},
-                'Discover': {'volume': 5, 'fraud_rate': 1.3, 'color': '#d62728'},
+                'JCB': {'volume': 12, 'fraud_rate': 0.6, 'color': '#2ca02c'},
+                'UnionPay': {'volume': 5, 'fraud_rate': 1.3, 'color': '#d62728'},
                 'Other': {'volume': 3, 'fraud_rate': 0.9, 'color': '#9467bd'}
             }
             
@@ -1863,12 +1911,20 @@ class FraudDetectionDashboard:
         st.success("📊 Report generated successfully!")
         st.info("Report includes: Transaction volume, fraud detection rates, model performance, and risk analysis.")
 
+def fraudlabspro_screen_order(api_key, ip_address, email, amount, **kwargs):
+    url = "https://api.fraudlabspro.com/v1/order/screen"
+    params = {
+        "key": api_key,
+        "ip_address": ip_address,
+        "email": email,
+        "amount": amount,
+    }
+    params.update(kwargs)
+    response = requests.get(url, params=params)
+    response.raise_for_status()
+    return response.json()
+
 def main():
     """Main function to run the dashboard."""
     dashboard = FraudDetectionDashboard()
-    # Create the chatbot UI with multiple fallback options
-    create_chatbot_ui()
-    dashboard.run_dashboard()
-
-if __name__ == "__main__":
-    main() 
+    dashboard.run_dashboard() 

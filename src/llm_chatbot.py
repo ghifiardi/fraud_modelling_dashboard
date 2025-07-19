@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-LLM Chatbot Service with Multiple Fallback Options
-Supports local Ollama, OpenAI, HuggingFace, and rule-based responses
+LLM Chatbot Service with Multiple Fallback Options and FraudLabs Pro Integration
+Supports local Ollama, OpenAI, HuggingFace, and real-time fraud screening
 """
 
 import streamlit as st
@@ -9,9 +9,8 @@ import requests
 import os
 import json
 import time
+import re
 from typing import Optional, Dict, Any
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
 
 class LLMChatbotService:
     def __init__(self):
@@ -19,24 +18,27 @@ class LLMChatbotService:
         try:
             self.openai_api_key = st.secrets.get('OPENAI_API_KEY', os.getenv('OPENAI_API_KEY'))
             self.huggingface_api_key = st.secrets.get('HUGGINGFACE_API_KEY', os.getenv('HUGGINGFACE_API_KEY'))
+            self.fraudlabs_api_key = st.secrets.get('FRAUDLABS_API_KEY', os.getenv('FRAUDLABS_API_KEY', 'TNFUSCVIQFJEV4QYO10B7EONML4515EP'))
         except:
             # Fallback to environment variables
             self.openai_api_key = os.getenv('OPENAI_API_KEY')
             self.huggingface_api_key = os.getenv('HUGGINGFACE_API_KEY')
+            self.fraudlabs_api_key = os.getenv('FRAUDLABS_API_KEY', 'TNFUSCVIQFJEV4QYO10B7EONML4515EP')
         
         self.selected_model = st.session_state.get('llm_model', 'openai')
         
-    def get_response(self, user_input: str, chat_history: list = None) -> str:
+    def get_response(self, user_input: str, chat_history: list = []) -> str:
         """
-        Get response from LLM with multiple fallback options
+        Get response from LLM with multiple fallback options and FraudLabs Pro integration
         """
+        # Check if this is a FraudLabs Pro query first
+        fraudlabs_response = self._check_fraudlabs_query(user_input)
+        if fraudlabs_response:
+            return fraudlabs_response
+            
         # Model selection logic
         model = st.session_state.get('llm_model', 'openai')
-        if model == 'cisco_foundation':
-            response = self._try_cisco_foundation(user_input)
-            if response:
-                return response
-        elif model == 'openai':
+        if model == 'openai':
             response = self._try_openai(user_input, chat_history)
             if response:
                 return response
@@ -51,7 +53,184 @@ class LLMChatbotService:
         # Fallback to rule-based responses
         return self._rule_based_response(user_input)
     
-    def _try_ollama(self, user_input: str, chat_history: list = None) -> Optional[str]:
+    def _check_fraudlabs_query(self, user_input: str) -> Optional[str]:
+        """Check if user input is asking for FraudLabs Pro screening"""
+        user_input_lower = user_input.lower()
+        
+        # Keywords that indicate FraudLabs Pro screening request
+        fraudlabs_keywords = [
+            'screen transaction', 'fraud check', 'risk score', 'fraudlabs',
+            'screen order', 'transaction risk', 'fraud screening',
+            'check ip', 'check email', 'check amount'
+        ]
+        
+        if any(keyword in user_input_lower for keyword in fraudlabs_keywords):
+            return self._get_fraudlabs_screening_help()
+        
+        # Check if user provided transaction details
+        if any(word in user_input_lower for word in ['ip:', 'email:', 'amount:', 'transaction:']):
+            return self._extract_and_screen_transaction(user_input)
+            
+        return None
+    
+    def _get_fraudlabs_screening_help(self) -> str:
+        """Provide help for FraudLabs Pro screening"""
+        return """**FraudLabs Pro Real-Time Screening** 🔍
+
+To screen a transaction for fraud risk, provide the details in this format:
+```
+IP: 1.2.3.4
+Email: customer@example.com  
+Amount: 250.00
+```
+
+Or ask: "Screen this transaction: IP 1.2.3.4, Email customer@example.com, Amount $250"
+
+**What FraudLabs Pro checks:**
+- IP address risk (proxy, VPN, location)
+- Email risk (disposable, free email, domain age)
+- Amount patterns and velocity
+- Device fingerprinting
+- Geographic risk factors
+- Blacklist checking
+
+**Response includes:**
+- Risk score (0-100)
+- Status (APPROVE/REVIEW/DECLINE)
+- Risk factors and explanations
+- Recommended actions
+
+Try it now with a transaction!"""
+    
+    def _extract_and_screen_transaction(self, user_input: str) -> str:
+        """Extract transaction details and screen with FraudLabs Pro"""
+        try:
+            # Extract IP, email, and amount from user input
+            ip_address = None
+            email = None
+            amount = None
+            
+            # Simple extraction logic
+            lines = user_input.split('\n')
+            for line in lines:
+                line_lower = line.lower()
+                if 'ip:' in line_lower or 'ip ' in line_lower:
+                    ip_address = line.split(':')[-1].strip().split()[0]
+                elif 'email:' in line_lower or 'email ' in line_lower:
+                    email = line.split(':')[-1].strip().split()[0]
+                elif 'amount:' in line_lower or 'amount ' in line_lower or '$' in line:
+                    amount_str = line.split(':')[-1].strip().split()[0]
+                    amount = amount_str.replace('$', '').replace(',', '')
+            
+            # If not found in structured format, try to extract from text
+            if not ip_address or not email or not amount:
+                # Fallback extraction
+                ip_pattern = r'\b(?:\d{1,3}\.){3}\d{1,3}\b'
+                email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+                amount_pattern = r'\$?(\d+(?:,\d{3})*(?:\.\d{2})?)'
+                
+                ip_match = re.search(ip_pattern, user_input)
+                email_match = re.search(email_pattern, user_input)
+                amount_match = re.search(amount_pattern, user_input)
+                
+                if ip_match:
+                    ip_address = ip_match.group()
+                if email_match:
+                    email = email_match.group()
+                if amount_match:
+                    amount = amount_match.group(1).replace(',', '')
+            
+            if ip_address and email and amount:
+                return self._screen_transaction_fraudlabs(ip_address, email, amount)
+            else:
+                return """**Missing transaction details** ❌
+
+Please provide:
+- IP address (e.g., 1.2.3.4)
+- Email address (e.g., customer@example.com)
+- Amount (e.g., 250.00)
+
+Format: "Screen transaction: IP 1.2.3.4, Email customer@example.com, Amount $250"
+"""
+        except Exception as e:
+            return f"Error processing transaction details: {str(e)}"
+    
+    def _screen_transaction_fraudlabs(self, ip_address: str, email: str, amount: str) -> str:
+        """Screen transaction using FraudLabs Pro API"""
+        try:
+            url = "https://api.fraudlabspro.com/v1/order/screen"
+            params = {
+                "key": self.fraudlabs_api_key,
+                "ip_address": ip_address,
+                "email": email,
+                "amount": amount,
+                "currency": "USD"
+            }
+            
+            response = requests.get(url, params=params, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            # Format the response
+            risk_score = data.get('risk_score', 'N/A')
+            status = data.get('status', 'UNKNOWN')
+            risk_factors = data.get('risk_factors', [])
+            
+            result = f"""**FraudLabs Pro Screening Result** 🔍
+
+**Transaction Details:**
+- IP: {ip_address}
+- Email: {email}
+- Amount: ${amount}
+
+**Risk Assessment:**
+- **Risk Score**: {risk_score}/100
+- **Status**: {status}
+- **Recommendation**: {self._get_fraudlabs_recommendation(status)}
+
+**Risk Factors:**
+"""
+            
+            if risk_factors:
+                for factor in risk_factors:
+                    result += f"- {factor}\n"
+            else:
+                result += "- No specific risk factors identified\n"
+            
+            result += f"""
+**Response Time**: {response.elapsed.total_seconds():.2f}s
+**API Status**: ✅ Live data from FraudLabs Pro
+
+This is real-time fraud screening data, not AI-generated content!"""
+            
+            return result
+            
+        except requests.exceptions.RequestException as e:
+            return f"""**FraudLabs Pro API Error** ❌
+
+Error: {str(e)}
+
+This could be due to:
+- Network connectivity issues
+- API rate limiting
+- Invalid API key
+- Service temporarily unavailable
+
+Please try again in a few moments."""
+        except Exception as e:
+            return f"Error screening transaction: {str(e)}"
+    
+    def _get_fraudlabs_recommendation(self, status: str) -> str:
+        """Get recommendation based on FraudLabs Pro status"""
+        recommendations = {
+            'APPROVE': '✅ Allow transaction',
+            'REVIEW': '⚠️ Review manually',
+            'DECLINE': '❌ Block transaction',
+            'UNKNOWN': '❓ Manual review recommended'
+        }
+        return recommendations.get(status, 'Manual review recommended')
+    
+    def _try_ollama(self, user_input: str, chat_history: list = []) -> Optional[str]:
         """Try local Ollama server"""
         try:
             response = requests.post(
@@ -72,8 +251,11 @@ class LLMChatbotService:
         except Exception as e:
             return None
     
-    def _try_openai(self, user_input: str, chat_history: list = None) -> Optional[str]:
+    def _try_openai(self, user_input: str, chat_history: list = []) -> Optional[str]:
         """Try OpenAI API"""
+        if not self.openai_api_key:
+            return "[OpenAI API key not set]"
+            
         try:
             headers = {
                 "Authorization": f"Bearer {self.openai_api_key}",
@@ -102,10 +284,10 @@ class LLMChatbotService:
         except Exception as e:
             return None
     
-    def _try_huggingface(self, user_input: str, chat_history: list = None) -> Optional[str]:
+    def _try_huggingface(self, user_input: str, chat_history: list = []) -> Optional[str]:
         """Try HuggingFace Inference API"""
         if not self.huggingface_api_key:
-            return None
+            return "[HuggingFace API key not set]"
             
         try:
             headers = {
@@ -150,63 +332,17 @@ class LLMChatbotService:
                                 return generated_text.strip()
                 except Exception:
                     continue
-                    
-            return None
+            return "[HuggingFace: No response from available models]"
         except Exception as e:
-            return None
-    
-    def _try_cisco_foundation(self, user_input: str) -> str:
-        """Try Cisco Foundation-Sec-8B via transformers (local) or Hugging Face Inference API (cloud)."""
-        try:
-            # Try local transformers first
-            try:
-                tokenizer = AutoTokenizer.from_pretrained("fdtn-ai/Foundation-Sec-8B")
-                model = AutoModelForCausalLM.from_pretrained("fdtn-ai/Foundation-Sec-8B")
-                inputs = tokenizer(user_input, return_tensors="pt")
-                outputs = model.generate(
-                    inputs["input_ids"],
-                    max_new_tokens=256,
-                    do_sample=True,
-                    temperature=0.1,
-                    top_p=0.9,
-                )
-                response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-                response = response.replace(user_input, "").strip()
-                return response
-            except Exception:
-                # Fallback to Hugging Face Inference API
-                if not self.huggingface_api_key:
-                    return None
-                headers = {
-                    "Authorization": f"Bearer {self.huggingface_api_key}",
-                    "Content-Type": "application/json"
-                }
-                payload = {
-                    "inputs": user_input,
-                    "parameters": {
-                        "max_new_tokens": 256,
-                        "temperature": 0.1,
-                        "do_sample": True,
-                        "return_full_text": False
-                    }
-                }
-                response = requests.post(
-                    "https://api-inference.huggingface.co/models/fdtn-ai/Foundation-Sec-8B",
-                    headers=headers,
-                    json=payload,
-                    timeout=60
-                )
-                if response.status_code == 200:
-                    data = response.json()
-                    if isinstance(data, list) and len(data) > 0:
-                        return data[0].get("generated_text", "").strip()
-                return None
-        except Exception as e:
-            return f"[Cisco Foundation-Sec-8B error] {e}"
+            return f"[HuggingFace error] {e}"
     
     def _rule_based_response(self, user_input: str) -> str:
         """Rule-based fallback responses"""
         user_input_lower = user_input.lower()
+        
+        # FraudLabs Pro specific responses
+        if any(word in user_input_lower for word in ['fraudlabs', 'fraud labs', 'screening']):
+            return self._get_fraudlabs_screening_help()
         
         # Common fraud detection questions
         if any(word in user_input_lower for word in ['fraud', 'detection', 'what is']):
@@ -250,7 +386,11 @@ Performance metrics include AUC-ROC, Precision, Recall, and F1-Score. You can vi
 The system processes transactions in real-time and updates the dashboard automatically."""
         
         elif any(word in user_input_lower for word in ['hello', 'hi', 'hey']):
-            return """Hello! I'm your AI assistant for the fraud detection dashboard. I can help you understand how the system works, explain model predictions, and guide you through the dashboard features. What would you like to know about fraud detection?"""
+            return """Hello! I'm your AI assistant for the fraud detection dashboard. I can help you understand how the system works, explain model predictions, and guide you through the dashboard features. 
+
+**New Feature**: I can also screen transactions in real-time using FraudLabs Pro! Just ask me to screen a transaction with IP, email, and amount details.
+
+What would you like to know about fraud detection?"""
         
         else:
             return """I'm here to help you with fraud detection questions! You can ask me about:
@@ -259,100 +399,87 @@ The system processes transactions in real-time and updates the dashboard automat
 - Risk levels and thresholds
 - Model performance
 - Transaction monitoring
-- Or any other fraud detection topics
+- **Real-time fraud screening with FraudLabs Pro**
 
 What would you like to know?"""
     
     def _get_system_prompt(self) -> str:
-        """Get the system prompt for LLM interactions"""
-        return """You are a helpful AI assistant for a fraud detection dashboard. You help users understand:
+        """Get system prompt for LLM"""
+        splunk_mode = st.session_state.get('splunk_mode', False)
+        
+        if splunk_mode:
+            return """You are a Splunk fraud analytics expert. Provide detailed, practical guidance on:
+- Splunk fraud detection implementation
+- SPL (Search Processing Language) queries
+- Risk-based alerting and correlation searches
+- Machine Learning Toolkit (MLTK) for fraud
+- Enterprise Security (ES) integration
+- SOAR playbooks and automation
+- Data onboarding and indexing strategies
 
-1. **Fraud Detection Concepts**: Explain how fraud detection works, what factors are considered, and how ML models make predictions.
+Always provide actionable, specific advice with examples."""
+        else:
+            return """You are an AI assistant for a bank fraud detection dashboard. Help users understand:
+- Fraud detection concepts and methodologies
+- Dashboard features and navigation
+- Risk assessment and scoring
+- Model performance and interpretation
+- Real-time monitoring capabilities
+- Transaction analysis and alerts
 
-2. **Dashboard Navigation**: Guide users through the different sections (Real-time Dashboard, Transaction Monitor, Analytics, Model Management, Alerts & Logs).
-
-3. **Risk Assessment**: Explain risk levels (HIGH, MEDIUM, LOW, SAFE) and what they mean for transaction processing.
-
-4. **Model Performance**: Help users understand metrics like AUC-ROC, Precision, Recall, and F1-Score.
-
-5. **Technical Details**: Explain the machine learning models used (Logistic Regression, Random Forest, Isolation Forest) and their roles.
-
-6. **Best Practices**: Provide guidance on using the dashboard effectively and interpreting results.
-
-Keep responses concise, helpful, and focused on fraud detection. If you don't know something specific about the system, suggest where users can find more information in the dashboard."""
+Provide clear, helpful responses focused on fraud detection and banking security."""
 
 def create_chatbot_ui():
-    """Create the chatbot UI in Streamlit sidebar"""
+    """Create the chatbot UI in Streamlit sidebar, with Splunk Expert mode toggle"""
     st.sidebar.header("💬 AI Chatbot Assistant")
-    # Model selection
+    
+    # Splunk Expert Mode toggle
+    splunk_mode = st.sidebar.toggle("Splunk Expert Mode", value=st.session_state.get('splunk_mode', False))
+    st.session_state['splunk_mode'] = splunk_mode
+    
+    # Model selection (remove Cisco Foundation)
     llm_model = st.sidebar.selectbox(
         "Choose LLM Model",
-        ["openai", "huggingface", "ollama", "cisco_foundation"],
+        ["openai", "huggingface", "ollama"],
         format_func=lambda x: {
             "openai": "OpenAI (GPT-3.5/4)",
             "huggingface": "HuggingFace (General)",
-            "ollama": "Local Ollama (Mistral)",
-            "cisco_foundation": "Cisco Foundation-Sec-8B (Cybersecurity)"
+            "ollama": "Local Ollama (Mistral)"
         }[x],
-        index=["openai", "huggingface", "ollama", "cisco_foundation"].index(st.session_state.get('llm_model', 'openai'))
+        index=0
     )
     st.session_state['llm_model'] = llm_model
     
-    # Initialize chatbot service
-    if 'chatbot_service' not in st.session_state:
-        st.session_state.chatbot_service = LLMChatbotService()
+    # FraudLabs Pro integration info
+    st.sidebar.info("🔍 **FraudLabs Pro Integration**: Ask me to screen transactions for real-time fraud risk!")
     
-    # Initialize chat history
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
+    # Chat interface
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
     
-    # Show connection status
-    with st.sidebar.expander("🔗 Connection Status", expanded=False):
-        if st.session_state.chatbot_service.openai_api_key:
-            st.success("✅ OpenAI API available")
-        else:
-            st.info("ℹ️ OpenAI API key not set (optional)")
-        
-        if st.session_state.chatbot_service.huggingface_api_key:
-            st.success("✅ HuggingFace API available")
-        else:
-            st.info("ℹ️ HuggingFace API key not set (optional)")
+    # Display chat messages
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
     
     # Chat input
-    user_input = st.sidebar.text_input("Ask me anything about fraud detection...")
-    
-    if user_input:
-        with st.spinner("🤖 Thinking..."):
-            # Get response from chatbot service
-            response = st.session_state.chatbot_service.get_response(user_input, st.session_state.chat_history)
-            
-            # Add to chat history
-            st.session_state.chat_history.append(("user", user_input))
-            st.session_state.chat_history.append(("assistant", response))
-    
-    # Display chat history
-    for role, msg in st.session_state.chat_history:
-        if role == "user":
-            st.sidebar.markdown(f"**You:** {msg}")
-        else:
-            st.sidebar.markdown(f"**Assistant:** {msg}")
+    if prompt := st.chat_input("Ask about fraud detection or screen a transaction..."):
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        
+        # Get response
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                chatbot = LLMChatbotService()
+                response = chatbot.get_response(prompt)
+                st.markdown(response)
+        
+        # Add assistant response to chat history
+        st.session_state.messages.append({"role": "assistant", "content": response})
     
     # Clear chat button
-    if st.sidebar.button("🗑️ Clear Chat"):
-        st.session_state.chat_history = []
-        st.rerun()
-    
-    # Help button
-    if st.sidebar.button("❓ Help"):
-        st.sidebar.info("""
-        **How to use the chatbot:**
-        
-        Ask questions about:
-        - Fraud detection concepts
-        - Dashboard navigation
-        - Risk levels and thresholds
-        - Model performance
-        - Transaction monitoring
-        
-        The chatbot will automatically use the best available LLM service.
-        """) 
+    if st.sidebar.button("Clear Chat"):
+        st.session_state.messages = []
+        st.rerun() 

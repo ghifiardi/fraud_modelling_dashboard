@@ -1,17 +1,27 @@
 #!/usr/bin/env python3
 """
-Streamlit Cloud Entry Point
-This file is used by Streamlit Cloud to run the fraud detection dashboard
+AI Fraud Detection Monitor - Streamlit Cloud Deployment
+Main application file for Streamlit Cloud deployment
 """
 
+import streamlit as st
 import sys
 import os
 
 # Add src directory to path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.append('src')
 
-# Import and run the dashboard
-from dashboard import main
+# Import dashboard components
+from dashboard import FraudDetectionDashboard
+
+def main():
+    """Main Streamlit application entry point."""
+    
+    # Initialize dashboard
+    dashboard = FraudDetectionDashboard()
+    
+    # Run the dashboard
+    dashboard.run_dashboard()
 
 if __name__ == "__main__":
     main() 
