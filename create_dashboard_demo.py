@@ -176,7 +176,7 @@ def create_enhanced_demo_app():
     with col2:
         st.metric("Pending TX", len(st.session_state.demo_transactions))
     with col3:
-        st.metric("Total TX", sum(len(block.get('transactions', 0)) for block in st.session_state.demo_blocks))
+        st.metric("Total TX", sum(block.get('transactions', 0) for block in st.session_state.demo_blocks))
     with col4:
         st.metric("Mining Rate", "0.2 blocks/sec")
     
