@@ -1,80 +1,76 @@
 #!/bin/bash
 
-# 🚀 Streamlit Cloud Deployment Script
-# This script helps you deploy your fraud detection dashboard to Streamlit Cloud
+echo "🚀 Streamlit Cloud Deployment Verification"
+echo "=========================================="
 
-echo "🛡️ AI Fraud Detection Monitor - Streamlit Cloud Deployment"
-echo "=========================================================="
+# Check if required files exist
+echo "📁 Checking required files..."
 
-# Check if git is installed
-if ! command -v git &> /dev/null; then
-    echo "❌ Git is not installed. Please install Git first."
+if [ -f "streamlit_cloud_app.py" ]; then
+    echo "✅ streamlit_cloud_app.py - Found"
+else
+    echo "❌ streamlit_cloud_app.py - Missing"
     exit 1
 fi
 
-# Check if we're in the right directory
-if [ ! -f "streamlit_app.py" ]; then
-    echo "❌ Please run this script from the fraud_modelling_project directory"
+if [ -f "requirements.txt" ]; then
+    echo "✅ requirements.txt - Found"
+else
+    echo "❌ requirements.txt - Missing"
     exit 1
 fi
 
-echo "✅ Project structure verified"
-
-# Initialize git if not already done
-if [ ! -d ".git" ]; then
-    echo "📁 Initializing Git repository..."
-    git init
-    git add .
-    git commit -m "Initial commit: AI Fraud Detection Monitor"
-    echo "✅ Git repository initialized"
+if [ -f ".streamlit/config.toml" ]; then
+    echo "✅ .streamlit/config.toml - Found"
 else
-    echo "✅ Git repository already exists"
+    echo "❌ .streamlit/config.toml - Missing"
+    exit 1
 fi
 
-# Check if remote exists
-if ! git remote get-url origin &> /dev/null; then
-    echo ""
-    echo "🌐 GitHub Repository Setup"
-    echo "=========================="
-    echo "Please provide your GitHub repository URL:"
-    echo "Format: https://github.com/YOUR_USERNAME/fraud_modelling_project.git"
-    read -p "GitHub URL: " github_url
-    
-    if [ -n "$github_url" ]; then
-        git remote add origin "$github_url"
-        git branch -M main
-        git push -u origin main
-        echo "✅ Repository pushed to GitHub"
-    else
-        echo "⚠️  No GitHub URL provided. You'll need to set up the remote manually."
-    fi
+# Check git status
+echo ""
+echo "🔍 Checking git status..."
+if git status --porcelain | grep -q .; then
+    echo "⚠️  You have uncommitted changes. Please commit them first."
+    git status
+    exit 1
 else
-    echo "✅ GitHub remote already configured"
-    echo "Current remote: $(git remote get-url origin)"
+    echo "✅ All changes committed"
+fi
+
+# Check if remote is set
+echo ""
+echo "🌐 Checking remote repository..."
+if git remote -v | grep -q origin; then
+    echo "✅ Remote repository configured"
+    git remote -v
+else
+    echo "❌ No remote repository configured"
+    exit 1
+fi
+
+# Check if pushed
+echo ""
+echo "📤 Checking if code is pushed to GitHub..."
+if git status -uno | grep -q "Your branch is up to date"; then
+    echo "✅ Code is pushed to GitHub"
+else
+    echo "⚠️  Code may not be pushed. Run: git push origin main"
 fi
 
 echo ""
-echo "🔧 Streamlit Cloud Deployment Steps"
-echo "==================================="
+echo "🎯 Deployment Instructions:"
+echo "=========================="
+echo "1. Go to: https://share.streamlit.io"
+echo "2. Sign in with GitHub"
+echo "3. Click 'New app'"
+echo "4. Repository: ghifiardi/fraud_modelling_dashboard"
+echo "5. Branch: main"
+echo "6. Main file path: streamlit_cloud_app.py"
+echo "7. Python version: 3.9+"
+echo "8. Click 'Deploy!'"
 echo ""
-echo "1. 🌐 Go to Streamlit Cloud: https://share.streamlit.io"
-echo "2. 🔐 Sign in with your GitHub account"
-echo "3. ➕ Click 'New app'"
-echo "4. 📁 Select your repository: fraud_modelling_project"
-echo "5. 📄 Set main file path: streamlit_app.py"
-echo "6. 🔑 Configure secrets (API keys):"
+echo "🌐 Your app will be available at:"
+echo "https://your-app-name-ghifiardi.streamlit.app"
 echo ""
-echo "   Add this to Streamlit Cloud Secrets:"
-echo "   ------------------------------------"
-echo "   OPENAI_API_KEY = \"your-openai-api-key-here\""
-echo ""
-echo "7. 🚀 Click 'Deploy!'"
-echo ""
-echo "📚 Documentation:"
-echo "   - Deployment Guide: DEPLOYMENT_GUIDE.md"
-echo "   - Complete Documentation: PROJECT_DOCUMENTATION.md"
-echo ""
-echo "🎉 Your fraud detection dashboard will be live at:"
-echo "   https://YOUR_APP_NAME-YOUR_USERNAME.streamlit.app"
-echo ""
-echo "🇮🇩 Indonesian fraud detection system ready for deployment! 🛡️" 
+echo "✅ Ready for deployment!" 
