@@ -254,7 +254,11 @@ def create_architecture_video():
     
     # Auto-advance for video effect
     if st.session_state.show_animation and st.session_state.arch_step < 5:
-        time.sleep(2)
+        # Use st.empty() to create a placeholder for auto-advance
+        auto_advance_placeholder = st.empty()
+        with auto_advance_placeholder:
+            with st.spinner("⏳ Auto-advancing..."):
+                time.sleep(2)
         st.session_state.arch_step += 1
         st.rerun()
     

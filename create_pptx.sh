@@ -1,0 +1,31 @@
+#!/bin/bash
+
+echo "📊 ADA Competitive Analysis to PowerPoint Converter"
+echo "=================================================="
+echo "✅ Converting interactive deck to PowerPoint format..."
+echo ""
+echo "📋 What this creates:"
+echo "• Professional PowerPoint presentation (.pptx)"
+echo "• 9 slides with charts and analysis"
+echo "• High-quality visualizations"
+echo "• Ready for board presentations"
+echo ""
+echo "🎯 Slides included:"
+echo "1. Title Slide"
+echo "2. Executive Summary"
+echo "3. Performance Comparison (with bar chart)"
+echo "4. Radar Chart Analysis"
+echo "5. Feature Comparison (with table)"
+echo "6. Cost Analysis (with cost chart)"
+echo "7. Competitive Advantages"
+echo "8. Market Positioning (with scatter plot)"
+echo "9. Strategic Recommendations"
+echo ""
+echo "Converting..."
+
+python3 convert_to_pptx.py
+
+echo ""
+echo "✅ Conversion complete!"
+echo "📁 PowerPoint file created in current directory"
+echo "🎯 Ready for presentations and meetings" 
