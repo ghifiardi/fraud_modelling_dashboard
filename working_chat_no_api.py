@@ -203,6 +203,18 @@ The dashboard uses advanced algorithms to detect these threats in real-time! �
 • **Impact**: Minimal customer disruption
 • **Resolution**: Quick manual review process"""
 
+    # Splunk Expert Mode
+    if "splunk" in user_input_lower or "expert mode" in user_input_lower:
+        return (
+            "**Splunk Expert Mode** is an advanced feature in Splunk that allows power users to write complex search queries, correlate logs, and perform deep analytics on security and fraud data. "
+            "While our dashboard does not directly integrate with Splunk, you can use Splunk Expert Mode to:  \n"
+            "- Create custom fraud detection queries\n"
+            "- Correlate transaction logs with security events\n"
+            "- Visualize suspicious activity and anomalies\n"
+            "- Build dashboards for real-time fraud monitoring\n\n"
+            "If you want to know more about integrating Splunk with fraud detection, or need example queries, just ask!"
+        )
+
     # Default response
     else:
         responses = [
