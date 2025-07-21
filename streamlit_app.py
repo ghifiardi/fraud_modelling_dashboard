@@ -21,7 +21,7 @@ import requests
 # Add src to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from bank_fraud_detector import BankFraudDetector
+from src.bank_fraud_detector import BankFraudDetector
 import joblib
 
 # Import the new chatbot service
