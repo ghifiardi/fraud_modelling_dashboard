@@ -25,7 +25,7 @@ from src.bank_fraud_detector import BankFraudDetector
 import joblib
 
 # Import the new chatbot service
-from llm_chatbot import create_chatbot_ui
+from src.llm_chatbot import create_chatbot_ui
 
 # Import the streaming fraud detection system
 from streaming_fraud_detector import create_streaming_dashboard_tab
