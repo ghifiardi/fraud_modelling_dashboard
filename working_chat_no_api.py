@@ -203,16 +203,25 @@ The dashboard uses advanced algorithms to detect these threats in real-time! �
 • **Impact**: Minimal customer disruption
 • **Resolution**: Quick manual review process"""
 
-    # Splunk Expert Mode
+    # Splunk Expert Mode (improved, robust matching)
     if "splunk" in user_input_lower or "expert mode" in user_input_lower:
         return (
-            "**Splunk Expert Mode** is an advanced feature in Splunk that allows power users to write complex search queries, correlate logs, and perform deep analytics on security and fraud data. "
-            "While our dashboard does not directly integrate with Splunk, you can use Splunk Expert Mode to:  \n"
-            "- Create custom fraud detection queries\n"
-            "- Correlate transaction logs with security events\n"
+            "**What Splunk Expert Mode offers:**\n\n"
+            "Splunk Expert Mode is an advanced feature in Splunk that allows security analysts and fraud investigators to:\n"
+            "- Write complex search queries for deep log analysis\n"
+            "- Correlate transaction and security events in real-time\n"
             "- Visualize suspicious activity and anomalies\n"
-            "- Build dashboards for real-time fraud monitoring\n\n"
-            "If you want to know more about integrating Splunk with fraud detection, or need example queries, just ask!"
+            "- Build custom dashboards for fraud monitoring\n"
+            "- Automate alerts for high-risk patterns\n\n"
+            "**Common Use Cases:**\n"
+            "- Detecting coordinated fraud attacks across multiple systems\n"
+            "- Investigating unusual login or transaction patterns\n"
+            "- Integrating with machine learning models for predictive analytics\n\n"
+            "**Response includes:**\n"
+            "- Real-time event correlation\n"
+            "- Custom risk scoring and alerts\n"
+            "- Detailed audit trails for compliance\n\n"
+            "Want to see example Splunk queries for fraud detection? Just ask!"
         )
 
     # Default response

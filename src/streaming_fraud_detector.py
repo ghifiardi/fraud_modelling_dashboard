@@ -21,7 +21,7 @@ import plotly.express as px
 class KafkaSimulator:
     """Simulates Apache Kafka for high-throughput message queuing"""
     
-    def __init__(self, topic_name: str = "transactions", max_queue_size: int = 50000):
+    def __init__(self, topic_name: str = "transactions", max_queue_size: int = 100000):
         self.topic_name = topic_name
         self.message_queue = queue.Queue(maxsize=max_queue_size)
         self.consumers = []
@@ -40,12 +40,20 @@ class KafkaSimulator:
             message['kafka_timestamp'] = time.time()
             message['message_id'] = f"msg_{self.processing_stats['messages_produced']:06d}"
             
-            # Non-blocking put with timeout
-            self.message_queue.put(message, timeout=0.1)
+            # Non-blocking put with timeout - increased timeout
+            self.message_queue.put(message, timeout=0.5)
             self.processing_stats['messages_produced'] += 1
             return True
         except queue.Full:
-            return False
+            # If queue is full, try to consume some messages first
+            try:
+                self.consume_messages(batch_size=10, timeout_ms=50)
+                # Try again
+                self.message_queue.put(message, timeout=0.1)
+                self.processing_stats['messages_produced'] += 1
+                return True
+            except queue.Full:
+                return False
     
     def consume_messages(self, batch_size: int = 100, timeout_ms: int = 100) -> List[Dict[str, Any]]:
         """Consume messages from the Kafka topic (simulated)"""
@@ -263,7 +271,7 @@ class RealTimeFraudDetection:
         self.spark_streaming.stop_streaming()
         print("⏹️ Real-time fraud detection system stopped")
     
-    def start_transaction_generation(self, tps: int = 100):
+    def start_transaction_generation(self, tps: int = 50):
         """Start generating sample transactions at specified TPS"""
         if not self.is_generating:
             self.is_generating = True
@@ -391,7 +399,7 @@ def create_streaming_dashboard_tab():
                 st.success("⏹️ System stopped!")
     
     with col3:
-        tps = st.slider("TPS", 10, 200, 75, help="Transactions per second")
+        tps = st.slider("TPS", 10, 100, 25, help="Transactions per second")
     
     with col4:
         if st.session_state.system_started:
@@ -526,7 +534,7 @@ def create_streaming_dashboard_tab():
         ```
         Transaction Generator → Apache Kafka → Spark Streaming → Fraud Detection → Dashboard
                 ↓                    ↓              ↓              ↓              ↓
-              100 TPS            <1ms latency   100ms batches   ML Models    Real-time UI
+              25 TPS             <1ms latency   100ms batches   ML Models    Real-time UI
         ```
         
         **Key Features:**

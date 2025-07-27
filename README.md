@@ -30,18 +30,18 @@ A comprehensive fraud detection system with real-time monitoring, machine learni
 ### Local Development
 
 1. **Clone the repository**
-   ```bash
+```bash
    git clone https://github.com/ghifiardi/fraud_modelling_dashboard.git
    cd fraud_modelling_dashboard
    ```
 
 2. **Install dependencies**
    ```bash
-   pip install -r requirements.txt
-   ```
+pip install -r requirements.txt
+```
 
 3. **Run the dashboard**
-   ```bash
+```bash
    python3 -m streamlit run src/dashboard.py --server.port 8501
    ```
 

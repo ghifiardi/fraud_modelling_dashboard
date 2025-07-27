@@ -19,19 +19,26 @@ import os
 import requests
 
 # Add src to path for imports
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_path = os.path.join(current_dir, 'src')
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
 
-from src.bank_fraud_detector import BankFraudDetector
+try:
+    from bank_fraud_detector import BankFraudDetector
+    from llm_chatbot import create_chatbot_ui
+    from streaming_fraud_detector import create_streaming_dashboard_tab
+    print("✓ All modules imported successfully")
+except ImportError as e:
+    print(f"⚠ Import warning: {e}")
+    # Create placeholder functions if imports fail
+    def create_chatbot_ui():
+        st.error("Chatbot module not available")
+    
+    def create_streaming_dashboard_tab():
+        st.error("Streaming module not available")
+
 import joblib
-
-# Import the new chatbot service
-from src.llm_chatbot import create_chatbot_ui
-
-# Import the streaming fraud detection system
-from streaming_fraud_detector import create_streaming_dashboard_tab
-
-# Remove the chatbot UI creation from module level to prevent infinite loops
-# create_chatbot_ui()  # This was causing the infinite loop
 
 
 class FraudDetectionDashboard:
@@ -59,6 +66,7 @@ class FraudDetectionDashboard:
                     st.success("✓ New fraud detection model trained and saved!")
             except Exception as e:
                 st.error(f"Error loading model: {e}")
+                print(f"Model loading error: {e}")
                 return None
         
         return self.detector
@@ -92,17 +100,22 @@ class FraudDetectionDashboard:
     
     def run_dashboard(self):
         """Main dashboard application."""
-        st.set_page_config(
-            page_title="AI Fraud Detection Monitor",
-            page_icon="🛡️",
-            layout="wide",
-            initial_sidebar_state="expanded"
-        )
-        
-        # Load model first
-        self.detector = self.load_model()
-        
-        # Enhanced Custom CSS for modern styling
+        try:
+            st.set_page_config(
+                page_title="AI Fraud Detection Monitor",
+                page_icon="🛡️",
+                layout="wide",
+                initial_sidebar_state="expanded"
+            )
+            
+            # Load model first
+            self.detector = self.load_model()
+            
+            # Enhanced Custom CSS for modern styling
+        except Exception as e:
+            st.error(f"Dashboard initialization error: {e}")
+            st.info("Please check the console for more details.")
+            return
         st.markdown("""
         <style>
         /* Global styles */
@@ -299,57 +312,63 @@ class FraudDetectionDashboard:
         </style>
         """, unsafe_allow_html=True)
         
-        # Header
-        st.markdown('<h1 class="main-header">🛡️ AI Fraud Detection Monitor</h1>', unsafe_allow_html=True)
-        
-        # Add streaming system notification
-        st.info("🚀 **NEW: Real-Time Streaming System Available!** Click on the '🚀 Streaming System' tab to experience Apache Kafka + Spark Streaming simulation with sub-second transaction processing!")
-        
-        # Sidebar
-        self.create_sidebar()
-        
-        # Main content tabs - Move Streaming System to position 2 for better visibility
-        tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
-            "📊 Real-time Dashboard", 
-            "🚀 Streaming System", 
-            "🔍 Transaction Monitor", 
-            "📈 Analytics", 
-            "⚙️ Model Management",
-            "🚨 Alerts & Logs",
-            "📝 Analyst Review",
-            "🌐 Fraud Intelligence Network",
-            "🤖 OpenAI Playground"
-        ])
-        
-        with tab1:
-            self.real_time_dashboard()
-        
-        with tab2:
-            # Store detector in session state for streaming system
-            if self.detector:
-                st.session_state.detector = self.detector
-            create_streaming_dashboard_tab()
-        
-        with tab3:
-            self.transaction_monitor()
-        
-        with tab4:
-            self.analytics_dashboard()
-        
-        with tab5:
-            self.model_management()
-        
-        with tab6:
-            self.alerts_and_logs()
-        
-        with tab7:
-            self.analyst_review_tab()
-        
-        with tab8:
-            self.fraud_intelligence_network()
-        
-        with tab9:
-            self.openai_playground_tab()
+        try:
+            # Header
+            st.markdown('<h1 class="main-header">🛡️ AI Fraud Detection Monitor</h1>', unsafe_allow_html=True)
+            
+            # Add streaming system notification
+            st.info("🚀 **NEW: Real-Time Streaming System Available!** Click on the '🚀 Streaming System' tab to experience Apache Kafka + Spark Streaming simulation with sub-second transaction processing!")
+            
+            # Sidebar
+            self.create_sidebar()
+            
+            # Main content tabs - Move Streaming System to position 2 for better visibility
+            tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+                "📊 Real-time Dashboard", 
+                "🚀 Streaming System", 
+                "🔍 Transaction Monitor", 
+                "📈 Analytics", 
+                "⚙️ Model Management",
+                "🚨 Alerts & Logs",
+                "📝 Analyst Review",
+                "🌐 Fraud Intelligence Network",
+                "🤖 OpenAI Playground"
+            ])
+            
+            with tab1:
+                self.real_time_dashboard()
+            
+            with tab2:
+                # Store detector in session state for streaming system
+                if self.detector:
+                    st.session_state.detector = self.detector
+                create_streaming_dashboard_tab()
+            
+            with tab3:
+                self.transaction_monitor()
+            
+            with tab4:
+                self.analytics_dashboard()
+            
+            with tab5:
+                self.model_management()
+            
+            with tab6:
+                self.alerts_and_logs()
+            
+            with tab7:
+                self.analyst_review_tab()
+            
+            with tab8:
+                self.fraud_intelligence_network()
+            
+            with tab9:
+                self.openai_playground_tab()
+        except Exception as e:
+            st.error(f"Dashboard content error: {e}")
+            st.info("Please check the console for more details.")
+            import traceback
+            st.code(traceback.format_exc())
     
     def create_sidebar(self):
         """Create the sidebar with controls and settings."""
@@ -1926,5 +1945,12 @@ def fraudlabspro_screen_order(api_key, ip_address, email, amount, **kwargs):
 
 def main():
     """Main function to run the dashboard."""
-    dashboard = FraudDetectionDashboard()
-    dashboard.run_dashboard() 
+    try:
+        dashboard = FraudDetectionDashboard()
+        dashboard.run_dashboard()
+    except Exception as e:
+        st.error(f"Dashboard error: {e}")
+        st.info("Please check the console for more details.")
+
+if __name__ == "__main__":
+    main() 
